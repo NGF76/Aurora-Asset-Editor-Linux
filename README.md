@@ -4,6 +4,13 @@
 
 ---
 
+## Status
+
+**This project is currently under active development.**  
+Some features may be incomplete or unstable. Contributions and feedback are welcome.
+
+---
+
 ## About This Project
 
 This project is a Linux port of the original Aurora Asset Editor created by Swizzy.
@@ -18,7 +25,7 @@ The original tool was built using WPF (Windows Presentation Foundation) and was 
   The original source code was released as open-source and freely available for the community.  
   Original repository: https://github.com/XboxUnity/AuroraAssetEditor
 
-- **Linux Port Author**: [Your Name / GitHub Username]  
+- **Linux Port Author**: NGF76  
   - Replaced WPF with Avalonia UI (11.0.10)  
   - Converted all .xaml files to .axaml  
   - Updated C# code-behind to use Avalonia namespaces and APIs  
@@ -48,7 +55,7 @@ The original tool was built using WPF (Windows Presentation Foundation) and was 
 
 **Clone & Build**
 
-git clone https://github.com/YOUR_USERNAME/AuroraAssetEditorLinux.git
+git clone https://github.com/NGF76/AuroraAssetEditorLinux.git
 cd AuroraAssetEditorLinux
 dotnet restore
 dotnet build
@@ -64,9 +71,21 @@ dotnet run
 
 ---
 
+## To-Do / Roadmap
+
+- [ ] Complete conversion of all WPF controls to Avalonia
+- [ ] Fix remaining build errors
+- [ ] Add DeepSeek AI integration for smart asset suggestions
+- [ ] Improve performance for large asset files
+- [ ] Add more locale/language support
+- [ ] Package as .deb / .AppImage for easy Linux installation
+- [ ] Write user documentation
+
+---
+
 ## Disclaimer
 
-This project is a fork of the original work by Swizzy. All credits for the original logic, asset structure, and FTP handling belong to the original author. The UI and cross-platform compatibility changes are the work of this fork's maintainer.
+This project is a fork of the original work by Swizzy. All credits for the original logic, asset structure, and FTP handling belong to the original author. The UI and cross-platform compatibility changes are the work of this fork's maintainer (NGF76).
 
 This project is not affiliated with the original author or XboxUnity. It is shared under the same open-source spirit of the original work.
 
@@ -76,15 +95,6 @@ This project is not affiliated with the original author or XboxUnity. It is shar
 
 This project is released under the same open-source terms as the original work.  
 Please refer to the original repository for licensing details.
-
----
-
-## Future Plans
-
-- Add DeepSeek AI integration for smart asset suggestions
-- Improve performance for large asset files
-- Add more locale/language support
-- Package as .deb / .AppImage for easy Linux installation
 
 ---
 
