@@ -1,0 +1,7 @@
+/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/obj/Debug/net8.0/AuroraAssetEditorLinux.csproj.AssemblyReference.cache
+/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/obj/Debug/net8.0/Avalonia/Resources.Inputs.cache
+/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/obj/Debug/net8.0/Avalonia/resources
+/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/obj/Debug/net8.0/AuroraAssetEditorLinux.GeneratedMSBuildEditorConfig.editorconfig
+/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/obj/Debug/net8.0/AuroraAssetEditorLinux.AssemblyInfoInputs.cache
+/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/obj/Debug/net8.0/AuroraAssetEditorLinux.AssemblyInfo.cs
+/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/obj/Debug/net8.0/AuroraAssetEditorLinux.csproj.CoreCompileInputs.cache

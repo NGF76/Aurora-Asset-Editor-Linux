@@ -1,0 +1,119 @@
+{
+  "format": 1,
+  "restore": {
+    "/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/AuroraAssetEditorLinux.csproj": {}
+  },
+  "projects": {
+    "/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/AuroraAssetEditorLinux.csproj": {
+      "version": "1.4.3",
+      "restore": {
+        "projectUniqueName": "/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/AuroraAssetEditorLinux.csproj",
+        "projectName": "AuroraAssetEditor",
+        "projectPath": "/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/AuroraAssetEditorLinux.csproj",
+        "packagesPath": "/home/ngf/.nuget/packages/",
+        "outputPath": "/home/ngf/Desktop/AuroraAssetEditorLinux-1.4.11/AuroraAssetEditorLinux/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/ngf/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "/usr/lib/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1605"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.100"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Avalonia": {
+              "target": "Package",
+              "version": "[11.0.10, )"
+            },
+            "Avalonia.AvaloniaEdit": {
+              "target": "Package",
+              "version": "[11.0.6, )"
+            },
+            "Avalonia.Desktop": {
+              "target": "Package",
+              "version": "[11.0.10, )"
+            },
+            "Avalonia.Fonts.Inter": {
+              "target": "Package",
+              "version": "[11.0.10, )"
+            },
+            "Avalonia.Themes.Fluent": {
+              "target": "Package",
+              "version": "[11.0.10, )"
+            },
+            "FluentFTP": {
+              "target": "Package",
+              "version": "[54.2.0, )"
+            },
+            "MessageBox.Avalonia": {
+              "target": "Package",
+              "version": "[3.1.5.1, )"
+            },
+            "SixLabors.ImageSharp": {
+              "target": "Package",
+              "version": "[3.1.3, )"
+            },
+            "System.Data.SQLite": {
+              "target": "Package",
+              "version": "[1.0.118, )"
+            },
+            "System.Drawing.Common": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.NETCore.App.Host.linux-x64",
+              "version": "[8.0.30, 8.0.30]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.111/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

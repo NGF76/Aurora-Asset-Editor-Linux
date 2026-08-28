@@ -1,0 +1,47 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AuroraAssetEditor.InputDialog"
+        Title="Input"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        Width="300"
+        MinWidth="250">
+    
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ============ الصف 0: النص التوضيحي ============ -->
+        <TextBlock x:Name="InfoLabel"
+                   Grid.Row="0"
+                   HorizontalAlignment="Left"
+                   Text="Question:"
+                   Margin="0, 0, 0, 5" />
+
+        <!-- ============ الصف 1: مربع النص ============ -->
+        <TextBox x:Name="ValueBox"
+                 Grid.Row="1"
+                 MinWidth="100"
+                 HorizontalAlignment="Stretch"
+                 Text="Value"
+                 Margin="0, 0, 0, 10" />
+
+        <!-- ============ الصف 2: الأزرار ============ -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10">
+            
+            <Button x:Name="OkButton"
+                    Content="OK"
+                    MinWidth="60" />
+            
+            <Button x:Name="CancelButton"
+                    Content="Cancel"
+                    MinWidth="60" />
+        </StackPanel>
+    </Grid>
+</Window>

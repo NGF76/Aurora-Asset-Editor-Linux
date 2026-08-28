@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="AuroraAssetEditorLinux.Controls.ScreenshotsControl"
+             x:Name="UserControl"
+             Background="WhiteSmoke">
+    
+    <!-- السحب والإفلات في Avalonia يتم التعامل معه في الكود الخلفي -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ============ اختيار لقطة الشاشة ============ -->
+        <TextBlock Grid.Row="0"
+                   Grid.Column="0"
+                   Text="Select screenshot:"
+                   Margin="10" />
+        
+        <ComboBox x:Name="CBox"
+                  Grid.Row="0"
+                  Grid.Column="1"
+                  Margin="0, 10, 0, 10"
+                  HorizontalAlignment="Left"
+                  Width="200" />
+
+        <!-- ============ معاينة لقطة الشاشة ============ -->
+        <Expander Grid.Row="1"
+                  Grid.Column="0"
+                  Grid.ColumnSpan="2"
+                  Header="Preview" IsExpanded="True"
+                  VerticalAlignment="Top"
+                  HorizontalAlignment="Left"
+                  BorderBrush="Black"
+                  Margin="10, 0, 0, 0">
+            
+            <Viewbox Stretch="Uniform"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Top"
+                     MaxHeight="562"
+                     MaxWidth="1000">
+                
+                <Image x:Name="PreviewImg"
+                       MaxHeight="562"
+                       MaxWidth="1000"
+                       Height="562"
+                       Width="1000"
+                       Source="avares://AuroraAssetEditor/Assets/Placeholders/screenshot.png">
+                    
+                    <!-- قائمة السياق -->
+                    <Image.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="SaveContextMenuItem"
+                                      Header="Save Screenshot To File" IsExpanded="True" />
+                            <MenuItem Header="Replace Screenshot" IsExpanded="True" />
+                            <MenuItem Header="Add new Screenshot(s)" IsExpanded="True" />
+                            <MenuItem x:Name="RemoveContextMenuItem"
+                                      Header="Remove Screenshot" IsExpanded="True" />
+                        </ContextMenu>
+                    </Image.ContextMenu>
+                </Image>
+            </Viewbox>
+        </Expander>
+    </Grid>
+</UserControl>

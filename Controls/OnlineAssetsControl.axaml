@@ -1,0 +1,174 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="AuroraAssetEditorLinux.Controls.OnlineAssetsControl"
+             Background="WhiteSmoke">
+    
+    <!-- السحب والإفلات في Avalonia يتم التعامل معه في الكود الخلفي -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ============ الصف الأول: أدوات البحث ============ -->
+        <Grid Grid.Row="0"
+              HorizontalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <!-- مصدر البحث -->
+            <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Text="Select source:"
+                       Margin="10"
+                       HorizontalAlignment="Left" />
+            
+            <ComboBox x:Name="SourceBox"
+                      Grid.Row="0"
+                      Grid.Column="1"
+                      Width="150"
+                      HorizontalAlignment="Left"
+                      Margin="0, 10, 0, 10">
+                <ComboBoxItem Content="Xboxunity.net" />
+                <ComboBoxItem Content="Internet Archive" />
+            </ComboBox>
+
+            <!-- إعدادات اللغة (Locale) -->
+            <Grid Grid.Row="0"
+                  Grid.Column="2"
+                  x:Name="LocaleGrid"
+                  IsVisible="False">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Text="Locale:"
+                           Margin="10" />
+                <ComboBox x:Name="LocaleBox"
+                          Grid.Column="1"
+                          HorizontalAlignment="Left"
+                          Margin="0, 10, 0, 10" />
+            </Grid>
+
+            <!-- حقول البحث -->
+            <Grid Grid.Row="1"
+                  Grid.Column="0"
+                  Grid.ColumnSpan="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="TitleID:"
+                           Margin="10, 0, 10, 0" />
+                
+                <TextBox x:Name="TitleIdBox"
+                         Grid.Column="1"
+                         Width="70"
+                         MaxLength="8" />
+
+                <TextBlock Grid.Column="2"
+                           Text="Keywords:"
+                           Margin="10, 0, 10, 0" />
+                
+                <TextBox x:Name="KeywordsBox"
+                         Grid.Column="3"
+                         Width="200" />
+            </Grid>
+
+            <!-- أزرار البحث -->
+            <Grid Grid.Row="2"
+                  Grid.Column="0"
+                  Grid.ColumnSpan="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Content="Search by TitleID"
+                        Margin="10"
+                        Padding="10, 5, 10, 5" />
+                
+                <Button x:Name="KeywordsButton"
+                        Grid.Column="1"
+                        Content="Search by Keywords"
+                        Margin="10"
+                        Padding="10, 5, 10, 5" />
+                
+                <Button x:Name="DownloadAllButton"
+                        Grid.Column="2"
+                        Content="Apply All Assets"
+                        Margin="10"
+                        Padding="10, 5, 10, 5"
+                        IsVisible="False" />
+            </Grid>
+        </Grid>
+
+        <!-- ============ الصف الثاني: النتائج والمعاينة ============ -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <!-- عداد النتائج -->
+            <StackPanel Grid.Row="0"
+                        Grid.Column="1"
+                        Orientation="Horizontal">
+                <TextBlock Text="Search Result:"
+                           Margin="10, 0, 5, 0" />
+                <TextBlock x:Name="SearchResultCount" />
+            </StackPanel>
+
+            <!-- قائمة النتائج -->
+            <ListBox Grid.Row="1"
+                     Grid.Column="1"
+                     x:Name="ResultBox"
+                     Margin="10" />
+
+            <!-- معاينة الصورة -->
+            <Expander Grid.Column="0"
+                      Grid.Row="0"
+                      Grid.RowSpan="2"
+                      Margin="10, 20, 0, 10"
+                      Header="Preview" IsExpanded="True"
+                      BorderBrush="Black">
+                <Viewbox x:Name="PreviewBox">
+                    <Image x:Name="PreviewImg">
+                        <Image.ContextMenu>
+                            <ContextMenu />
+                        </Image.ContextMenu>
+                    </Image>
+                </Viewbox>
+            </Expander>
+        </Grid>
+
+        <!-- ============ الصف الثالث: شريط الحالة ============ -->
+        <StatusBar Grid.Row="2"
+                   Background="WhiteSmoke">
+            <TextBlock x:Name="StatusMessage" />
+        </StatusBar>
+    </Grid>
+</UserControl>

@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="AuroraAssetEditor.Controls.BackgroundControl"
+             x:Name="UserControl"
+             Background="WhiteSmoke">
+    
+    <!-- السحب والإفلات في Avalonia يتم التعامل معه في الكود الخلفي -->
+    <Grid>
+        <Expander Header="Preview" IsExpanded="True"
+                  VerticalAlignment="Top"
+                  HorizontalAlignment="Left"
+                  BorderBrush="Black"
+                  Margin="10">
+            
+            <Viewbox Stretch="Uniform"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Top"
+                     MaxHeight="720"
+                     MaxWidth="1280">
+                
+                <Image x:Name="PreviewImg"
+                       MaxHeight="720"
+                       MaxWidth="1280"
+                       Height="720"
+                       Width="1280"
+                       Source="avares://AuroraAssetEditor/Assets/Placeholders/background.png">
+                    
+                    <!-- قائمة السياق (Context Menu) -->
+                    <Image.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="SaveContextMenuItem"
+                                      Header="Save Background To File" IsExpanded="True" />
+                            <MenuItem Header="Select new Background" IsExpanded="True" />
+                        </ContextMenu>
+                    </Image.ContextMenu>
+                </Image>
+            </Viewbox>
+        </Expander>
+    </Grid>
+</UserControl>
