@@ -75,7 +75,6 @@ dotnet run
 
 - [ ] Complete conversion of all WPF controls to Avalonia
 - [ ] Fix remaining build errors
-- [ ] Add DeepSeek AI integration for smart asset suggestions
 - [ ] Improve performance for large asset files
 - [ ] Add more locale/language support
 - [ ] Package as .deb / .AppImage for easy Linux installation
