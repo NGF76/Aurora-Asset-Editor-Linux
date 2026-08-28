@@ -55,7 +55,7 @@ The original tool was built using WPF (Windows Presentation Foundation) and was 
 
 **Clone & Build**
 
-git clone https://github.com/NGF76/AuroraAssetEditorLinux.git
+git clone https://github.com/NGF76/Aurora-Asset-Editor-Linux.git
 cd AuroraAssetEditorLinux
 dotnet restore
 dotnet build
