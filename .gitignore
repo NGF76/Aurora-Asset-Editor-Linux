@@ -1,0 +1,29 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.vs
+*.pidb
+*.log
+*.cache
+*.nupkg
+
+# Avalonia
+*.crash
+*.tmp
+
+# System
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.sln.iml
+*.code-workspace
+
+# Logs
+*.log
+error.log
