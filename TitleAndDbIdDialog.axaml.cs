@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using AuroraAssetEditorLinux.Helpers;
 
-namespace AuroraAssetEditor
+namespace AuroraAssetEditorLinux
 {
     public partial class TitleAndDbIdDialog : Window
     {

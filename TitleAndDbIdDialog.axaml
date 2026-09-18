@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="AuroraAssetEditor.TitleAndDbIdDialog"
+        x:Class="AuroraAssetEditorLinux.TitleAndDbIdDialog"
         Title="Enter Title ID and Database ID"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"

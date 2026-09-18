@@ -1,18 +1,17 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:AuroraAssetEditorLinux.Helpers"
-        xmlns:controls="clr-namespace:AuroraAssetEditorLinux.Controls"
+        xmlns:drag="clr-namespace:Avalonia.Input;assembly=Avalonia.Base"
         x:Class="AuroraAssetEditorLinux.MainWindow"
         Title="Aurora Asset Editor Linux v{0}.{1}.{2} by NGF76"
         Width="550"
         Height="350"
         MinWidth="550"
         MinHeight="350"
-        AllowDrop="True"
+        drag:DragDrop.AllowDrop="True"
         Background="White">
-    
+
     <Grid>
-        <!-- الطبقة الأولى: المحتوى الرئيسي -->
         <Grid ZIndex="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="4*"/>
@@ -23,98 +22,52 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- القائمة الرئيسية -->
-            <Menu Grid.Row="0"
-                  Grid.ColumnSpan="2"
-                  VerticalAlignment="Center">
-                
-                <!-- قائمة File -->
-                <MenuItem Header="File" IsExpanded="True">
-                    <MenuItem Click="CreateNewOnClick" Header="Create New Asset File" IsExpanded="True" />
-                    <MenuItem Click="LoadAssetOnClick" Header="Load Asset File" IsExpanded="True" />
-                    <MenuItem Click="SaveAllAssetsOnClick" Header="Save All Assets" IsExpanded="True" />
-                    <MenuItem x:Name="FtpUpload"
-                              Click="SaveAllAssetsFtpOnClick"
-                              Header="Save All Assets to FTP" IsExpanded="True" />
+            <Menu Grid.Row="0" Grid.ColumnSpan="2" VerticalAlignment="Center">
+                <MenuItem Header="File">
+                    <MenuItem x:Name="CreateNewAssetMenu" Header="Create New Asset File" />
+                    <MenuItem x:Name="LoadAssetMenu" Header="Load Asset File" />
+                    <MenuItem x:Name="SaveAllAssetsMenu" Header="Save All Assets" />
+                    <MenuItem x:Name="FtpUpload" Header="Save All Assets to FTP" />
                     <Separator />
-                    <MenuItem Click="SaveBoxartOnClick" Header="Save Boxart/Cover Asset" IsExpanded="True" />
-                    <MenuItem Click="SaveBackgroundOnClick" Header="Save Background Asset" IsExpanded="True" />
-                    <MenuItem Click="SaveScreenshotsOnClick" Header="Save Screenshots Asset" IsExpanded="True" />
-                    <MenuItem Click="SaveIconBannerOnClick" Header="Save Icon/Banner Asset" IsExpanded="True" />
+                    <MenuItem x:Name="SaveBoxartMenu" Header="Save Boxart/Cover Asset" />
+                    <MenuItem x:Name="SaveBackgroundMenu" Header="Save Background Asset" />
+                    <MenuItem x:Name="SaveScreenshotsMenu" Header="Save Screenshots Asset" />
+                    <MenuItem x:Name="SaveIconBannerMenu" Header="Save Icon/Banner Asset" />
                     <Separator />
-                    <MenuItem Click="ExitOnClick" Header="Exit" IsExpanded="True" />
+                    <MenuItem x:Name="ExitMenu" Header="Exit" />
                 </MenuItem>
 
-                <!-- قائمة Settings -->
-                <MenuItem x:Name="SettingsMenu" Header="Settings" IsExpanded="True">
-                    <MenuItem x:Name="AutoResizeImages"
-                              Header="Auto Resize Images" IsExpanded="True"
-                              IsCheckable="True"
-                              IsChecked="True" />
-                    <MenuItem x:Name="UseCompression"
-                              Header="Use Compression" IsExpanded="True"
-                              IsCheckable="True"
-                              IsChecked="True" />
+                <MenuItem x:Name="SettingsMenu" Header="Settings">
+                    <MenuItem x:Name="AutoResizeImages" Header="Auto Resize Images" />
+                    <MenuItem x:Name="UseCompression" Header="Use Compression" />
                 </MenuItem>
 
-                <!-- قائمة Edit -->
-                <MenuItem x:Name="EditMenu"
-                          Header="Edit" IsExpanded="True" />
+                <MenuItem x:Name="EditMenu" Header="Edit" />
 
-                <!-- قائمة GameSelector (مخفية في البداية) -->
-                <MenuItem x:Name="GameSelector"
-                          Visibility="Hidden"
-                          Margin="100,0,0,0">
-                    <MenuItem x:Name="GameTitleIdMenu"
-                              Click="CopyTitleIdToClipboard_Click"
-                              ToolTip="Copies the TitleId to the clipboard"/> 
-                    <MenuItem x:Name="GameDbIdMenu"
-                              Click="CopyDbIdToClipboard_Click"
-                              ToolTip="Copies the DatabaseID to the clipboard"/>
-                    <MenuItem Header="Unselect current game" IsExpanded="True"
-                              Click="ClearCurrentGame_Click"
-                              ToolTip="Clear Selection"/>
+                <MenuItem x:Name="GameSelector" IsVisible="False" Margin="100,0,0,0">
+                    <MenuItem x:Name="GameTitleIdMenu" ToolTip.Tip="Copies the TitleId to the clipboard"/>
+                    <MenuItem x:Name="GameDbIdMenu" ToolTip.Tip="Copies the DatabaseID to the clipboard"/>
+                    <MenuItem Header="Unselect current game" ToolTip.Tip="Clear Selection"/>
                 </MenuItem>
             </Menu>
 
-            <!-- علامات التبويب (TabControl) -->
-            <TabControl Grid.Row="1"
-                        Grid.ColumnSpan="2"
-                        Margin="10">
-                <TabItem x:Name="BoxartTab" Header="Boxart/Cover" IsExpanded="True" />
-                <TabItem x:Name="BackgroundTab" Header="Background" IsExpanded="True" />
-                <TabItem x:Name="IconBannerTab" Header="Icon/Banner" IsExpanded="True" />
-                <TabItem x:Name="ScreenshotsTab" Header="Screenshots" IsExpanded="True" />
-                <TabItem x:Name="OnlineAssetsTab"
-                         Header="Online Assets" IsExpanded="True" />
-                <TabItem x:Name="FtpAssetsTab"
-                         Header="FTP Assets" IsExpanded="True" />
+            <TabControl Grid.Row="1" Grid.ColumnSpan="2" Margin="10">
+                <TabItem x:Name="BoxartTab" Header="Boxart/Cover" />
+                <TabItem x:Name="BackgroundTab" Header="Background" />
+                <TabItem x:Name="IconBannerTab" Header="Icon/Banner" />
+                <TabItem x:Name="ScreenshotsTab" Header="Screenshots" />
+                <TabItem x:Name="OnlineAssetsTab" Header="Online Assets" />
+                <TabItem x:Name="FtpAssetsTab" Header="FTP Assets" />
             </TabControl>
         </Grid>
 
-        <!-- الطبقة الثانية: مؤشر التحميل (Busy Indicator) -->
-        <Grid x:Name="BusyIndicator"
-              IsVisible="False"
-              ZIndex="1">
+        <Grid x:Name="BusyIndicator" IsVisible="False" ZIndex="1">
             <Grid.Background>
                 <SolidColorBrush Opacity="0.7" Color="Gray" />
             </Grid.Background>
-            
-            <Grid MinWidth="100"
-                  MinHeight="100"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  Background="WhiteSmoke">
-                
-                <!-- المؤشر الدائري (CircularProgressBar) -->
-                <controls:CircularProgressBar />
-                
-                <!-- النص -->
-                <TextBlock Margin="20"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           FontWeight="Bold"
-                           Text="Please wait while processing your request..." />
+            <Grid MinWidth="100" MinHeight="100" HorizontalAlignment="Center" VerticalAlignment="Center" Background="WhiteSmoke">
+                <ProgressBar IsIndeterminate="True" Width="60" Height="60" />
+                <TextBlock Margin="20" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Text="Please wait while processing your request..." />
             </Grid>
         </Grid>
     </Grid>

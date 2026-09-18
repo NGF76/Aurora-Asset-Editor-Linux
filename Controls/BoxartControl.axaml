@@ -5,8 +5,7 @@
              Background="WhiteSmoke">
     
     <Grid>
-        <!-- استخدام Expander بدلاً من Expander -->
-        <Expander Header="Preview" IsExpanded="True"
+        <Expander Header="Preview"
                   IsExpanded="True"
                   VerticalAlignment="Top"
                   HorizontalAlignment="Left"
@@ -23,13 +22,15 @@
                        MaxHeight="600"
                        Width="900"
                        Height="600"
-                       Source="avares://AuroraAssetEditorLinux/Assets/Placeholders/cover.png">
+                       >
                     
                     <Image.ContextMenu>
                         <ContextMenu>
                             <MenuItem x:Name="SaveContextMenuItem"
-                                      Header="Save Cover To File" IsExpanded="True" />
-                            <MenuItem Header="Select new Cover" IsExpanded="True" />
+                                      Header="Save Cover To File" />
+                            <MenuItem x:Name="CropContextMenuItem"
+                                      Header="Crop Cover to 2:3" />
+                            <MenuItem Header="Select new Cover" />
                         </ContextMenu>
                     </Image.ContextMenu>
                 </Image>

@@ -7,6 +7,8 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using AuroraAssetEditorLinux.Dialogs;
 
 namespace AuroraAssetEditorLinux.Classes
 {
@@ -281,7 +283,7 @@ namespace AuroraAssetEditorLinux.Classes
             }
 
             public void SetBoxart(AssetFile asset) => SetImage(asset, (int)AssetType.Boxart);
-            public void SetBackground(AssetFile asset) => SetImage(asset, (int)AssetType.Background);
+            public void SetBackground(System.Drawing.Image img, AssetFile asset) => SetImage(asset, (int)AssetType.Background);
             public void SetIcon(AssetFile asset) => SetImage(asset, (int)AssetType.Icon);
             public void SetBanner(AssetFile asset) => SetImage(asset, (int)AssetType.Banner);
 
@@ -289,6 +291,16 @@ namespace AuroraAssetEditorLinux.Classes
             {
                 for (var i = (int)AssetType.ScreenshotStart; i < (int)AssetType.ScreenshotEnd; i++)
                     SetImage(asset, i);
+            }
+
+            internal void SetBackground(System.Drawing.Image img, bool shouldUseCompression)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal void SetBackground(AssetFile asset)
+            {
+                throw new NotImplementedException();
             }
         }
 

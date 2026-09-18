@@ -52,17 +52,17 @@
                        MaxWidth="1000"
                        Height="562"
                        Width="1000"
-                       Source="avares://AuroraAssetEditor/Assets/Placeholders/screenshot.png">
+                       >
                     
                     <!-- قائمة السياق -->
                     <Image.ContextMenu>
                         <ContextMenu>
                             <MenuItem x:Name="SaveContextMenuItem"
-                                      Header="Save Screenshot To File" IsExpanded="True" />
-                            <MenuItem Header="Replace Screenshot" IsExpanded="True" />
-                            <MenuItem Header="Add new Screenshot(s)" IsExpanded="True" />
+                                      Header="Save Screenshot To File" />
+                            <MenuItem Header="Replace Screenshot" />
+                            <MenuItem Header="Add new Screenshot(s)" />
                             <MenuItem x:Name="RemoveContextMenuItem"
-                                      Header="Remove Screenshot" IsExpanded="True" />
+                                      Header="Remove Screenshot" />
                         </ContextMenu>
                     </Image.ContextMenu>
                 </Image>

@@ -5,10 +5,7 @@ namespace AuroraAssetEditorLinux.Helpers
 {
     public static class GlobalState
     {
-        private static Game _currentGame = new Game()
-        {
-            IsGameSelected = false
-        };
+        private static Game _currentGame = new Game() { IsGameSelected = false };
 
         public static event Action? GameChanged;
 

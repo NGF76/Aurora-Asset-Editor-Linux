@@ -8,13 +8,18 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Threading.Tasks;
+using AuroraAssetEditorLinux.Classes;
+using AuroraAssetEditorLinux.Dialogs;
+using AuroraAssetEditorLinux.Controls;
+using AuroraAssetEditorLinux.Models;
+using AuroraAssetEditorLinux.Helpers;
 
 namespace AuroraAssetEditorLinux.Classes
 {
     internal class FtpOperations
     {
         private readonly DataContractJsonSerializer _serializer = new DataContractJsonSerializer(typeof(FtpSettings));
-        public EventHandler<StatusArgs>? StatusChanged;
+        public EventHandler<FtpStatusArgs>? StatusChanged;
         private AsyncFtpClient? _client;
         private FtpSettings _settings;
 
@@ -56,7 +61,7 @@ namespace AuroraAssetEditorLinux.Classes
             {
                 try
                 {
-                    handler.Invoke(this, new StatusArgs(string.Format(msg, param)));
+                    handler.Invoke(this, new FtpStatusArgs(string.Format(msg, param)));
                 }
                 catch (Exception ex)
                 {
@@ -144,7 +149,6 @@ namespace AuroraAssetEditorLinux.Classes
                     Config = new FtpConfig
                     {
                         EncryptionMode = FtpEncryptionMode.None,
-                        KeepAlive = true,
                         ConnectTimeout = 30000
                     }
                 };
@@ -374,13 +378,15 @@ namespace AuroraAssetEditorLinux.Classes
         }
     }
 
-    public class StatusArgs : EventArgs
+    // Disabled This Function 
+    public class FtpStatusArgs : EventArgs
     {
-        public StatusArgs(string statusMessage)
-        {
-            StatusMessage = statusMessage;
-        }
+        public string Message { get; set; }
 
-        public string StatusMessage { get; }
+        public FtpStatusArgs(string message)
+        {
+            Message = message;
+        }
     }
 }
+

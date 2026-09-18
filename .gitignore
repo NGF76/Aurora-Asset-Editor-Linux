@@ -1,29 +1,26 @@
-# .NET
+# Build results
 bin/
 obj/
+[Dd]ebug/
+[Rr]elease/
 *.user
 *.suo
-*.userosscache
-*.vs
-*.pidb
-*.log
-*.cache
-*.nupkg
-
-# Avalonia
-*.crash
-*.tmp
-
-# System
-.DS_Store
-Thumbs.db
 
 # IDE
+.vs/
 .vscode/
 .idea/
-*.sln.iml
-*.code-workspace
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Logs
 *.log
 error.log
+
+# NuGet
+*.nupkg
+packages/
+

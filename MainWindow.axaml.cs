@@ -1,30 +1,50 @@
-using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Input;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform.Storage;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using AuroraAssetEditorLinux.Classes;
+using Avalonia.Input;
+using Avalonia.Platform.Storage;
 using AuroraAssetEditorLinux.Controls;
+using AuroraAssetEditorLinux.Classes;
 using AuroraAssetEditorLinux.Helpers;
 using AuroraAssetEditorLinux.Models;
-//using Classes;
-//using Models;
-//using Controls;
-//using Helpers;
+using AuroraAssetEditorLinux.Dialogs;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace AuroraAssetEditorLinux
 {
+    public class GameData
+    {
+        public bool IsGameSelected { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string TitleId { get; set; } = string.Empty;
+        public string DbId { get; set; } = string.Empty;
+    }
+
+    public static class GlobalState
+    {
+        public static GameData CurrentGame { get; set; } = new();
+
+        public static event Action? GameChanged;
+
+        public static void RaiseGameChanged()
+        {
+            GameChanged?.Invoke();
+        }
+    }
+
     public partial class MainWindow : Window
     {
         private const string AssetFileFilter =
@@ -55,6 +75,17 @@ namespace AuroraAssetEditorLinux
             DataContext = GlobalState.CurrentGame;
             GlobalState.GameChanged += OnGameChanged;
 
+            CreateNewAssetMenu.Click += CreateNewAssetMenu_Click;
+            LoadAssetMenu.Click += LoadAssetOnClick;
+            SaveAllAssetsMenu.Click += SaveAllAssetsMenu_Click;
+            SaveBoxartMenu.Click += (s, e) => _boxart.Save();
+            SaveBackgroundMenu.Click += (s, e) => _background.Save();
+            SaveScreenshotsMenu.Click += (s, e) => _screenshots.Save();
+            SaveIconBannerMenu.Click += (s, e) => _iconBanner.Save();
+            ExitMenu.Click += (s, e) => Close();
+            GameTitleIdMenu.Click += CopyTitleIdToClipboard_Click;
+            GameDbIdMenu.Click += CopyDbIdToClipboard_Click;
+
             // add support for TLS 1.1 and TLS 1.2
             ServicePointManager.SecurityProtocol = ServicePointManager.SecurityProtocol
                 | (SecurityProtocolType)768 // TLS 1.1
@@ -65,10 +96,12 @@ namespace AuroraAssetEditorLinux
             BoxartTab.Content = _boxart;
             _boxartMenu = new[] {
                 new MenuItem { Header = "Save Cover To File" },
+                new MenuItem { Header = "Crop Cover to 2:3" },
                 new MenuItem { Header = "Select new Cover" }
             };
             _boxartMenu[0].Click += _boxart.SaveImageToFileOnClick;
-            _boxartMenu[1].Click += _boxart.SelectNewCover;
+            _boxartMenu[1].Click += _boxart.CropCover;
+            _boxartMenu[2].Click += _boxart.SelectNewCover;
             #endregion
 
             #region Background
@@ -114,7 +147,12 @@ namespace AuroraAssetEditorLinux
             #endregion
 
             OnlineAssetsTab.Content = new OnlineAssetsControl(this, _boxart, _background, _iconBanner, _screenshots);
-            FtpAssetsTab.Content = new FtpAssetsControl(this, _boxart, _background, _iconBanner, _screenshots);
+            FtpAssetsTab.Content = new TextBlock
+            {
+                Text = "FTP asset controls are unavailable in this build.",
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
         }
 
         private void OnGameChanged()
@@ -126,6 +164,24 @@ namespace AuroraAssetEditorLinux
                 GameTitleIdMenu.Header = GlobalState.CurrentGame.TitleId;
                 GameDbIdMenu.Header = GlobalState.CurrentGame.DbId;
             });
+        }
+
+        private void CreateNewAssetMenu_Click(object? sender, EventArgs e)
+        {
+            _boxart.Reset();
+            _background.Reset();
+            _iconBanner.Reset();
+            _screenshots.Reset();
+            GlobalState.CurrentGame = new GameData();
+            GlobalState.RaiseGameChanged();
+        }
+
+        private void SaveAllAssetsMenu_Click(object? sender, EventArgs e)
+        {
+            _boxart.Save();
+            _background.Save();
+            _screenshots.Save();
+            _iconBanner.Save();
         }
 
         // ============ دوال تحميل الملفات ============
@@ -194,7 +250,7 @@ namespace AuroraAssetEditorLinux
                 var img = asset.GetBoxart();
                 if (img != null)
                 {
-                    _boxart.Load(img);
+                    LoadBoxartImage(img);
                     Dispatcher.UIThread.Invoke(() => BoxartTab.IsSelected = true);
                 }
                 else
@@ -209,12 +265,33 @@ namespace AuroraAssetEditorLinux
             }
         }
 
-        private async Task ShowMessageAsync(string message, string title)
+        private void LoadBoxartImage(object image)
         {
-            // في Avalonia، نستخدم MessageBox
-            // يمكنك استخدام MessageBox أو أي طريقة أخرى لعرض الرسائل
-            await MessageBox.Show(message, title);
+            var loadMethod = _boxart.GetType()
+                .GetMethods()
+                .FirstOrDefault(m => m.Name == "Load"
+                    && m.GetParameters().Length == 1
+                    && (m.GetParameters()[0].ParameterType.IsAssignableFrom(image.GetType())
+                        || m.GetParameters()[0].ParameterType == typeof(object)));
+
+            if (loadMethod == null)
+            {
+                throw new InvalidOperationException($"BoxartControl has no compatible Load overload for {image.GetType().FullName}.");
+            }
+
+            loadMethod.Invoke(_boxart, new[] { image });
         }
+
+        private async Task ShowMessageAsync(string message, string title)
+{
+       //  صحيح (Avalonia مع CustomMessageBox)
+        await CustomMessageBox.ShowAsync(
+        this,           // النافذة الأم
+        message,
+        title,
+        false           // لا حاجة لزر Cancel
+       );
+}
 
         // ============ دوال المساعدة ============
 
@@ -311,47 +388,46 @@ namespace AuroraAssetEditorLinux
 
         // ============ دوال السحب والإفلات ============
 
-        internal void OnDragEnter(object? sender, DragEventArgs e)
+        internal void OnDragEnter(object? sender, DragEventArgs  e)
         {
-            if (e.Data.Contains(DataFormats.FileNames))
-                e.Effects = DragDropEffects.Copy;
+            if (e.DataTransfer.Contains(DataFormat.File))
+                e.DragEffects = DragDropEffects.Copy;
             else
-                e.Effects = DragDropEffects.None;
+                e.DragEffects = DragDropEffects.None;
         }
 
         internal async void DragDrop(Control sender, DragEventArgs e)
         {
-            if (!e.Data.Contains(DataFormats.FileNames)) return;
+            if (!e.DataTransfer.Contains(DataFormat.File)) return;
             
-            var files = e.Data.GetText()?.Split('\n') ?? Array.Empty<string>();
+            var files = e.DataTransfer.TryGetFiles()?.Select(f => f.Path.LocalPath).ToArray() ?? Array.Empty<string>();
             BusyIndicator.IsVisible = true;
-            
-            await Task.Run(() =>
+            try
             {
-                // منطق السحب والإفلات
                 foreach (var file in files)
                 {
                     if (!string.IsNullOrWhiteSpace(file) && File.Exists(file))
                     {
-                        // معالجة الملف
+                        if (VerifyAuroraMagic(file))
+                            LoadAuroraAsset(file);
+                        else
+                            LoadFsdAsset(file);
                     }
                 }
-            });
-            BusyIndicator.IsVisible = false;
+            }
+            finally
+            {
+                BusyIndicator.IsVisible = false;
+            }
         }
 
-        // ============ دوال الحافظة ============
 
         private async void CopyTitleIdToClipboard_Click(object? sender, EventArgs e)
         {
             string titleId = GlobalState.CurrentGame.TitleId;
             if (!string.IsNullOrEmpty(titleId))
             {
-                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-                if (clipboard != null)
-                {
-                    await clipboard.SetTextAsync(titleId);
-                }
+                await CopyTextToClipboardAsync(this, titleId);
             }
         }
 
@@ -360,11 +436,32 @@ namespace AuroraAssetEditorLinux
             string DbID = GlobalState.CurrentGame.DbId;
             if (!string.IsNullOrEmpty(DbID))
             {
-                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-                if (clipboard != null)
+                await CopyTextToClipboardAsync(this, DbID);
+            }
+        }
+
+        private static async Task CopyTextToClipboardAsync(Window window, string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+
+            var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
+            if (clipboard == null) return;
+
+            var setTextAsync = clipboard.GetType().GetMethod("SetTextAsync", new[] { typeof(string) });
+            if (setTextAsync != null)
+            {
+                var result = setTextAsync.Invoke(clipboard, new object[] { text });
+                if (result is Task task)
                 {
-                    await clipboard.SetTextAsync(DbID);
+                    await task;
                 }
+                return;
+            }
+
+            var setText = clipboard.GetType().GetMethod("SetText", new[] { typeof(string) });
+            if (setText != null)
+            {
+                setText.Invoke(clipboard, new object[] { text });
             }
         }
 
@@ -376,12 +473,23 @@ namespace AuroraAssetEditorLinux
             base.OnClosing(e);
         }
 
-        // ============ دوال إضافية (للكمال) ============
-
         public static async Task SaveToFile(object img, string title, string defaultFilename, Control parent)
         {
-            // تنفيذ منطق حفظ الملف
-            // هذه الدالة سيتم تنفيذها لاحقاً
+            var storageProvider = TopLevel.GetTopLevel(parent)?.StorageProvider;
+            if (storageProvider == null || img is not Image<Rgba32> image)
+                return;
+
+            var result = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = title,
+                SuggestedFileName = defaultFilename,
+                FileTypeChoices = new[] { new FilePickerFileType("PNG Image") { Patterns = new[] { "*.png" } } }
+            });
+            if (result == null)
+                return;
+
+            await using var stream = await result.OpenWriteAsync();
+            await image.SaveAsPngAsync(stream);
         }
     }
 }

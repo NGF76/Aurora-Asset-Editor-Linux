@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AuroraAssetEditorLinux.Classes;
 
-namespace AuroraAssetEditor
+namespace AuroraAssetEditorLinux
 {
     public partial class BulkActionsDialog : Window
     {

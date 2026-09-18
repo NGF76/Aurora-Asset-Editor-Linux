@@ -34,14 +34,14 @@
                        MaxWidth="64"
                        Width="64"
                        Height="64"
-                       Source="avares://AuroraAssetEditor/Assets/Placeholders/icon.png">
+                       >
                     
                     <!-- قائمة السياق -->
                     <Image.ContextMenu>
                         <ContextMenu>
                             <MenuItem x:Name="SaveIconContextMenuItem"
-                                      Header="Save Icon To File" IsExpanded="True" />
-                            <MenuItem Header="Select new Icon" IsExpanded="True" />
+                                      Header="Save Icon To File" />
+                            <MenuItem Header="Select new Icon" />
                         </ContextMenu>
                     </Image.ContextMenu>
                 </Image>
@@ -68,14 +68,14 @@
                        MaxWidth="420"
                        Height="96"
                        Width="420"
-                       Source="avares://AuroraAssetEditor/Assets/Placeholders/banner.png">
+                       >
                     
                     <!-- قائمة السياق -->
                     <Image.ContextMenu>
                         <ContextMenu>
                             <MenuItem x:Name="SaveBannerContextMenuItem"
-                                      Header="Save Banner To File" IsExpanded="True" />
-                            <MenuItem Header="Select new Banner" IsExpanded="True" />
+                                      Header="Save Banner To File" />
+                            <MenuItem Header="Select new Banner" />
                         </ContextMenu>
                     </Image.ContextMenu>
                 </Image>

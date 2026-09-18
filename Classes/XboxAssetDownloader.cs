@@ -11,6 +11,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Net.Http;
 using System.Xml;
 
 namespace AuroraAssetEditorLinux.Classes
@@ -200,4 +201,74 @@ namespace AuroraAssetEditorLinux.Classes
 
     // ============ باقي الكود (XboxTitleInfo, XboxLocale, XboxKeywordResponse) ============
     // ... (كما هو موجود في ملفك) ...
+}
+
+public class XboxLocale
+{
+    public readonly string Locale;
+    private readonly string _name;
+
+    public XboxLocale(string locale, string name)
+    {
+        Locale = locale;
+        _name = name;
+    }
+
+    public override string ToString()
+    {
+        return $"{_name} [ {Locale} ]";
+    }
+}
+
+public class XboxTitleInfo
+{
+    public string Title { get; set; } = string.Empty;
+    public string TitleId { get; set; } = string.Empty;
+    public string Locale { get; set; } = string.Empty;
+    public XboxAssetInfo[] AssetsInfo { get; set; } = Array.Empty<XboxAssetInfo>();
+
+    public static XboxTitleInfo FromTitleId(uint titleId, XboxLocale locale)
+    {
+        return new XboxTitleInfo
+        {
+            TitleId = titleId.ToString("X8"),
+            Locale = locale.Locale
+        };
+    }
+
+    public class XboxAssetInfo
+    {
+        public XboxAssetType AssetType { get; set; }
+        public Uri? AssetUrl { get; set; }
+        public bool HaveAsset { get; set; }
+        public XboxAsset GetAsset() { return new XboxAsset(); }
+    }
+
+    public class XboxAsset
+    {
+        public XboxAssetType AssetType { get; set; }
+        public Image<Rgba32>? Image { get; set; }
+    }
+
+    public enum XboxAssetType
+    {
+        Icon,
+        Banner,
+        Background,
+        Screenshot
+    }
+}
+
+[DataContract]
+public class XboxKeywordResponse
+{
+    [DataMember(Name = "entries")]
+    public XboxKeywordEntry[]? Entries { get; set; }
+}
+
+[DataContract]
+public class XboxKeywordEntry
+{
+    [DataMember(Name = "detailsUrl")]
+    public string? DetailsUrl { get; set; }
 }

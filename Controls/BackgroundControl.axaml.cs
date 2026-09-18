@@ -5,21 +5,27 @@ using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Avalonia.Platform;
 using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-//using Classes;
-using Image = System.Drawing.Image;
-using Size = System.Drawing.Size;
 using AuroraAssetEditorLinux.Controls;
+using AuroraAssetEditorLinux.Classes;
+using AuroraAssetEditorLinux.Dialogs;
+using Avalonia.VisualTree;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Formats.Png;
+using static AuroraAssetEditorLinux.Classes.AuroraAsset;
+
 
 namespace AuroraAssetEditorLinux.Controls
 {
     public partial class BackgroundControl : UserControl
     {
         private readonly MainWindow _main;
-        private AuroraAsset.AssetFile _assetFile;
+        private AssetFile _assetFile;
         private MemoryStream? _memoryStream;
         private bool _hasPreview;
 
@@ -29,7 +35,7 @@ namespace AuroraAssetEditorLinux.Controls
         {
             InitializeComponent();
             _main = main;
-            _assetFile = new AuroraAsset.AssetFile();
+            _assetFile = new AssetFile();
 
             // ربط أحداث السحب والإفلات
             this.AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
@@ -112,7 +118,7 @@ namespace AuroraAssetEditorLinux.Controls
 
         public void Reset()
         {
-            _assetFile = new AuroraAsset.AuroraAsset.AssetFile();
+            _assetFile = new AssetFile();
             _hasPreview = false;
             _memoryStream?.Close();
             _memoryStream = null;
@@ -125,7 +131,7 @@ namespace AuroraAssetEditorLinux.Controls
             Dispatcher.UIThread.Invoke(() => SetPreview(_assetFile.GetBackground()));
         }
 
-        private void SetPreview(Image? img)
+        private void SetPreview(Image<Rgba32>? img)
         {
             if (img == null)
             {
@@ -134,17 +140,28 @@ namespace AuroraAssetEditorLinux.Controls
                 return;
             }
 
+            var previewBytes = _assetFile.FileData;
+            if (previewBytes == null || previewBytes.Length == 0)
+            {
+                _memoryStream?.Close();
+                _memoryStream = new MemoryStream();
+            img.SaveAsPng(_memoryStream);
+            _memoryStream.Seek(0, SeekOrigin.Begin);
+            PreviewImg.Source = new Bitmap(_memoryStream);
+            _hasPreview = true;
+            return;
+            }
+
             _memoryStream?.Close();
-            _memoryStream = new MemoryStream();
-            img.Save(_memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+            _memoryStream = new MemoryStream(previewBytes, writable: false);
             _memoryStream.Seek(0, SeekOrigin.Begin);
 
-            var bitmap = new Bitmap(_memoryStream);
-            PreviewImg.Source = bitmap;
+            var previewBitmap = new Bitmap(_memoryStream);
+            PreviewImg.Source = previewBitmap;
             _hasPreview = true;
         }
 
-        public void Load(Image img)
+        public void Load(Image<Rgba32> img)
         {
             var shouldUseCompression = false;
             Dispatcher.UIThread.Invoke(() => shouldUseCompression = _main.UseCompression.IsChecked);
@@ -156,13 +173,17 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void OnDragEnter(object? sender, DragEventArgs e)
         {
-            if (e.Data.Contains(DataFormats.FileNames))
+            var data = e.GetType().GetProperty("Data")?.GetValue(e);
+            var contains = data?.GetType().GetMethod("Contains", new[] { typeof(string) });
+            var hasFiles = contains != null && contains.Invoke(data, new object[] { "Files" }) is bool isFileDrop && isFileDrop;
+
+            if (hasFiles)
             {
-                e.Effects = DragDropEffects.Copy;
+                e.DragEffects = DragDropEffects.Copy;
             }
             else
             {
-                e.Effects = DragDropEffects.None;
+                e.DragEffects = DragDropEffects.None;
             }
         }
 
@@ -184,44 +205,54 @@ namespace AuroraAssetEditorLinux.Controls
         }
 
         internal async void SelectNewBackground(object? sender, EventArgs e)
+{
+    var storageProvider = TopLevel.GetTopLevel(this)?.StorageProvider;
+    if (storageProvider == null) return;
+
+    var options = new FilePickerOpenOptions
+    {
+        Title = "Select new background",
+        AllowMultiple = false,
+        FileTypeFilter = new[]
         {
-            var storageProvider = TopLevel.GetTopLevel(this)?.StorageProvider;
-            if (storageProvider == null) return;
-
-            var options = new FilePickerOpenOptions
-            {
-                Title = "Select new background",
-                AllowMultiple = false,
-                FileTypeFilter = new[]
-                {
-                    new FilePickerFileType("Images") 
-                    { 
-                        Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.tif", "*.tiff" } 
-                    }
-                }
-            };
-
-            var result = await storageProvider.OpenFilePickerAsync(options);
-            if (result?.Count > 0)
-            {
-                try
-                {
-                    await using var stream = await result[0].OpenReadAsync();
-                    var image = Image.FromStream(stream);
-                    Load(image);
-                    _main.BusyIndicator.IsVisible = false;
-                }
-                catch (Exception ex)
-                {
-                    await MessageBox.Show($"Error loading image: {ex.Message}", "Error");
-                    _main.BusyIndicator.IsVisible = false;
-                }
-            }
-            else
-            {
-                _main.BusyIndicator.IsVisible = false;
+            new FilePickerFileType("Images") 
+            { 
+                Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.tif", "*.tiff" } 
             }
         }
+    };
+
+    var result = await storageProvider.OpenFilePickerAsync(options);
+    if (result?.Count > 0)
+    {
+        try
+        {
+            await using var stream = await result[0].OpenReadAsync();
+
+                    Load(SixLabors.ImageSharp.Image.Load<Rgba32>(stream));
+            _main.BusyIndicator.IsVisible = false;
+        }
+        catch (Exception ex)
+        {
+            //  تعريف parentWindow قبل الاستخدام
+            var parentWindow = this.FindAncestorOfType<Window>();
+            if (parentWindow != null)
+            {
+                await CustomMessageBox.ShowAsync(
+                    parentWindow,
+                    $"Error loading image: {ex.Message}",
+                    "Error",
+                    false
+                );
+            }
+            _main.BusyIndicator.IsVisible = false;
+        }
+    }
+    else
+    {
+        _main.BusyIndicator.IsVisible = false;
+    }
+}
 
         public byte[] GetData()
         {
@@ -229,7 +260,7 @@ namespace AuroraAssetEditorLinux.Controls
         }
 
         // دالة للوصول إلى الصورة (للاستخدام في MainWindow)
-        public Image? GetPreviewImage()
+        public Image<Rgba32>? GetPreviewImage()
         {
             return _assetFile.GetBackground();
         }

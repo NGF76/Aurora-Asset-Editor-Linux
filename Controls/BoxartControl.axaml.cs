@@ -6,14 +6,16 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using MessageBox.Avalonia;
-using MessageBox.Avalonia.Enums;
+using Avalonia.VisualTree;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using AuroraAssetEditorLinux.Classes;
+using AuroraAssetEditorLinux.Dialogs;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using AvaloniaImage = Avalonia.Controls.Image;
 
 namespace AuroraAssetEditorLinux.Controls
 {
@@ -32,17 +34,19 @@ namespace AuroraAssetEditorLinux.Controls
             _main = main;
             _assetFile = new AuroraAsset.AssetFile();
 
-            // ربط أحداث السحب والإفلات
             this.AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
             this.AddHandler(DragDrop.DropEvent, OnDrop);
 
-            // ربط أحداث القائمة
             if (SaveContextMenuItem != null)
             {
                 SaveContextMenuItem.Click += SaveImageToFileOnClick;
             }
 
-            // ربط حدث اختيار الصورة الجديدة
+            if (CropContextMenuItem != null)
+            {
+                CropContextMenuItem.Click += CropCover;
+            }
+
             var contextMenu = PreviewImg?.ContextMenu;
             if (contextMenu?.Items.Count > 1)
             {
@@ -53,7 +57,6 @@ namespace AuroraAssetEditorLinux.Controls
                 }
             }
 
-            // تحميل الصورة الافتراضية
             LoadDefaultImage();
         }
 
@@ -151,17 +154,15 @@ namespace AuroraAssetEditorLinux.Controls
             Dispatcher.UIThread.Invoke(() => SetPreview(img));
         }
 
-        // ============ دوال السحب والإفلات ============
-
         private void OnDragEnter(object? sender, DragEventArgs e)
         {
-            if (e.Data.Contains(DataFormats.FileNames))
+            if (e.DataTransfer.Contains(DataFormat.File))
             {
-                e.DragEffects = DragDropEffects.Copy;  // ✅
+                e.DragEffects = DragDropEffects.Copy;
             }
             else
             {
-                e.DragEffects = DragDropEffects.None;   // ✅
+                e.DragEffects = DragDropEffects.None;
             }
         }
 
@@ -170,8 +171,6 @@ namespace AuroraAssetEditorLinux.Controls
             _main.DragDrop(this, e);
         }
 
-        // ============ دوال القائمة ============
-
         internal async void SaveImageToFileOnClick(object? sender, EventArgs e)
         {
             var img = _assetFile.GetBoxart();
@@ -179,6 +178,42 @@ namespace AuroraAssetEditorLinux.Controls
             {
                 await MainWindow.SaveToFile(img, "Select where to save the Cover", "cover.png", this);
             }
+        }
+
+        internal async void CropCover(object? sender, EventArgs e)
+        {
+            var image = _assetFile.GetBoxart();
+            if (image == null)
+            {
+                return;
+            }
+
+            var targetRatio = 2d / 3d;
+            var currentRatio = (double)image.Width / image.Height;
+            if (Math.Abs(currentRatio - targetRatio) < 0.001d)
+            {
+                return;
+            }
+
+            var cropWidth = image.Width;
+            var cropHeight = image.Height;
+            if (currentRatio > targetRatio)
+            {
+                cropWidth = (int)Math.Round(image.Height * targetRatio);
+            }
+            else
+            {
+                cropHeight = (int)Math.Round(image.Width / targetRatio);
+            }
+
+            var cropRectangle = new Rectangle(
+                (image.Width - cropWidth) / 2,
+                (image.Height - cropHeight) / 2,
+                cropWidth,
+                cropHeight);
+            var cropped = image.Clone(context => context.Crop(cropRectangle));
+            Load(cropped);
+            await Task.CompletedTask;
         }
 
         internal async void SelectNewCover(object? sender, EventArgs e)
@@ -205,15 +240,23 @@ namespace AuroraAssetEditorLinux.Controls
                 try
                 {
                     await using var stream = await result[0].OpenReadAsync();
-                    var image = Image.Load<Rgba32>(stream);
+                    var image = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
                     Load(image);
                     _main.BusyIndicator.IsVisible = false;
                 }
                 catch (Exception ex)
                 {
-                    await MessageBoxManager
-                        .GetMessageBoxStandardWindow("Error", $"Error loading image: {ex.Message}")
-                        .Show();
+                    
+                    var parentWindow = this.FindAncestorOfType<Window>();
+                    if (parentWindow != null)
+                    {
+                        await CustomMessageBox.ShowAsync(
+                            parentWindow,
+                            $"Error loading image: {ex.Message}",
+                            "Error",
+                            false
+                        );
+                    }
                     _main.BusyIndicator.IsVisible = false;
                 }
             }

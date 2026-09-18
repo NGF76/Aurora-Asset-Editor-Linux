@@ -14,7 +14,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AuroraAssetEditorLinux.Helpers;
 //using Classes;
-using Image = System.Drawing.Image;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Formats.Png;
 using AuroraAssetEditorLinux.Controls;
 using AuroraAssetEditorLinux.Classes;
 
@@ -43,17 +45,17 @@ namespace AuroraAssetEditorLinux.Controls
         private XboxUnity.XboxUnityAsset[] _unityResult = Array.Empty<XboxUnity.XboxUnityAsset>();
         private XboxTitleInfo[] _xboxResult = Array.Empty<XboxTitleInfo>();
         private InternetArchiveAsset[] _archiveResult = Array.Empty<InternetArchiveAsset>();
-        private Image? _currentImage;
+        private Image<Rgba32>? _currentImage;
         private string? _keywords;
         private uint _titleId;
         private bool _isBusy;
 
         // قوائم السياق
-        private UIElement[] _coverMenu = Array.Empty<UIElement>();
-        private UIElement[] _iconMenu = Array.Empty<UIElement>();
-        private UIElement[] _bannerMenu = Array.Empty<UIElement>();
-        private UIElement[] _backgroundMenu = Array.Empty<UIElement>();
-        private UIElement[] _screenshotsMenu = Array.Empty<UIElement>();
+       private object[] _coverMenu;
+       private object[] _iconMenu;
+       private object[] _bannerMenu;
+       private object[] _backgroundMenu;
+       private object[] _screenshotsMenu;
 
         public OnlineAssetsControl(MainWindow main, BoxartControl boxart, BackgroundControl background,
                                    IconBannerControl iconBanner, ScreenshotsControl screenshots)
@@ -72,16 +74,9 @@ namespace AuroraAssetEditorLinux.Controls
             KeywordsBox.KeyDown += OnKeywordsBoxKeyDown!;
 
             // ربط أزرار البحث
-            var buttons = this.FindControls<Button>();
-            foreach (var btn in buttons)
-            {
-                if (btn.Content?.ToString() == "Search by TitleID")
-                    btn.Click += ByTitleIdClick!;
-                else if (btn.Content?.ToString() == "Search by Keywords")
-                    btn.Click += ByKeywordsClick!;
-                else if (btn.Content?.ToString() == "Apply All Assets")
-                    btn.Click += DownloadAllButton_Click!;
-            }
+            TitleIdButton.Click += ByTitleIdClick!;
+            KeywordsButton.Click += ByKeywordsClick!;
+            DownloadAllButton.Click += DownloadAllButton_Click!;
 
             // ربط اختيار النتيجة
             ResultBox.SelectionChanged += ResultBox_SelectionChanged!;
@@ -102,7 +97,7 @@ namespace AuroraAssetEditorLinux.Controls
         private void InitializeMenus()
         {
             // قائمة الغلاف
-            _coverMenu = new UIElement[]
+            _coverMenu = new object[]
             {
                 new MenuItem { Header = "Save cover to file" },
                 new MenuItem { Header = "Set as cover" }
@@ -111,7 +106,7 @@ namespace AuroraAssetEditorLinux.Controls
             ((MenuItem)_coverMenu[1]).Click += (s, e) => { if (_currentImage != null) _boxart.Load(_currentImage); };
 
             // قائمة الأيقونة
-            _iconMenu = new UIElement[]
+            _iconMenu = new object[]
             {
                 new MenuItem { Header = "Save icon to file" },
                 new MenuItem { Header = "Set as icon" }
@@ -120,7 +115,7 @@ namespace AuroraAssetEditorLinux.Controls
             ((MenuItem)_iconMenu[1]).Click += (s, e) => { if (_currentImage != null) _iconBanner.Load(_currentImage, true); };
 
             // قائمة البانر
-            _bannerMenu = new UIElement[]
+            _bannerMenu = new object[]
             {
                 new MenuItem { Header = "Save banner to file" },
                 new MenuItem { Header = "Set as banner" }
@@ -129,7 +124,7 @@ namespace AuroraAssetEditorLinux.Controls
             ((MenuItem)_bannerMenu[1]).Click += (s, e) => { if (_currentImage != null) _iconBanner.Load(_currentImage, false); };
 
             // قائمة الخلفية
-            _backgroundMenu = new UIElement[]
+            _backgroundMenu = new object[]
             {
                 new MenuItem { Header = "Save background to file" },
                 new MenuItem { Header = "Set as background" }
@@ -138,7 +133,7 @@ namespace AuroraAssetEditorLinux.Controls
             ((MenuItem)_backgroundMenu[1]).Click += (s, e) => { if (_currentImage != null) _background.Load(_currentImage); };
 
             // قائمة لقطات الشاشة
-            _screenshotsMenu = new UIElement[]
+            _screenshotsMenu = new object[]
             {
                 new MenuItem { Header = "Save screenshot to file" },
                 new MenuItem { Header = "Replace current screenshot" },
@@ -323,7 +318,7 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void PerformArchiveSearch()
         {
-            _archiveResult = _internetArchiveDownloader.GetTitleInfo(_titleId);
+            _archiveResult = _internetArchiveDownloader.GetTitleInfo(_titleId).GetAwaiter().GetResult();
         }
 
         private XboxLocale GetSelectedLocale()
@@ -517,7 +512,7 @@ namespace AuroraAssetEditorLinux.Controls
             }
         }
 
-        private void SetPreview(Image img, int maxWidth, int maxHeight)
+        private void SetPreview(Image<Rgba32> img, int maxWidth, int maxHeight)
         {
             _currentImage = img;
             PreviewImg.MaxHeight = maxHeight;
@@ -526,7 +521,7 @@ namespace AuroraAssetEditorLinux.Controls
             PreviewBox.MaxWidth = maxWidth + 20;
 
             using var ms = new MemoryStream();
-            img.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            img.SaveAsPng(ms);
             ms.Seek(0, SeekOrigin.Begin);
             PreviewImg.Source = new Bitmap(ms);
         }
@@ -594,7 +589,7 @@ namespace AuroraAssetEditorLinux.Controls
             StatusMessage.Text = "Finished downloading and applying all assets.";
         }
 
-        private void ApplyAsset(XboxTitleInfo.XboxAssetType type, Image image)
+        private void ApplyAsset(XboxTitleInfo.XboxAssetType type, Image<Rgba32> image)
         {
             if (image == null) return;
 
@@ -619,10 +614,10 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void OnDragEnter(object? sender, DragEventArgs e)
         {
-            if (e.Data.Contains(DataFormats.FileNames))
-                e.Effects = DragDropEffects.Copy;
+            if (e.DataTransfer.Contains(DataFormat.File))
+                e.DragEffects = DragDropEffects.Copy;
             else
-                e.Effects = DragDropEffects.None;
+                e.DragEffects = DragDropEffects.None;
         }
 
         private void OnDrop(object? sender, DragEventArgs e)

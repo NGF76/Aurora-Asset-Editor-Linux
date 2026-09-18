@@ -6,6 +6,13 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Threading.Tasks;
+using AuroraAssetEditorLinux.Classes;
+using AuroraAssetEditorLinux.Controls;
+using AuroraAssetEditorLinux.Dialogs;
+using AuroraAssetEditorLinux.Helpers;
+using AuroraAssetEditorLinux.Models;
+using FluentFTP;
 
 namespace AuroraAssetEditorLinux.Classes
 {
@@ -40,11 +47,11 @@ namespace AuroraAssetEditorLinux.Classes
             }
         }
 
-        public static string GetHomebrewTitleFromFtp(string path)
+        public static async Task<string> GetHomebrewTitleFromFtp(string path)
         {
             try
             {
-                var data = App.FtpOperations.GetAssetData("GameCoverInfo.bin", path);
+            var data = await App.FtpOperations.GetAssetData("GameCoverInfo.bin", path);
                 if (data == null || data.Length < 10)
                     return "N/A";
 

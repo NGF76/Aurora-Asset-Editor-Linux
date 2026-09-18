@@ -4,7 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using System;
 
-namespace AuroraAssetEditor
+namespace AuroraAssetEditorLinux
 {
     public partial class InputDialog : Window
     {

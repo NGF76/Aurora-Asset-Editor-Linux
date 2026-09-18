@@ -4,13 +4,18 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform;
+using Avalonia.VisualTree;
+using AuroraAssetEditorLinux.Dialogs;
 using Avalonia.Threading;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 //using Classes;
-using Image = System.Drawing.Image;
-using Size = System.Drawing.Size;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Formats.Png;
 using AuroraAssetEditorLinux.Controls;
 using AuroraAssetEditorLinux.Classes;
 
@@ -153,7 +158,7 @@ namespace AuroraAssetEditorLinux.Controls
             });
         }
 
-        private void SetPreview(Image? img, bool icon)
+        private void SetPreview(Image<Rgba32>? img, bool icon)
         {
             if (img == null)
             {
@@ -171,7 +176,7 @@ namespace AuroraAssetEditorLinux.Controls
             }
 
             var ms = new MemoryStream();
-            img.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            img.SaveAsPng(ms);
             ms.Seek(0, SeekOrigin.Begin);
 
             var bitmap = new Bitmap(ms);
@@ -192,7 +197,7 @@ namespace AuroraAssetEditorLinux.Controls
             }
         }
 
-        private void LoadDefaultImage(Image control, string type)
+        private void LoadDefaultImage(Avalonia.Controls.Image control, string type)
         {
             try
             {
@@ -205,7 +210,7 @@ namespace AuroraAssetEditorLinux.Controls
             }
         }
 
-        public void Load(Image img, bool icon)
+        public void Load(Image<Rgba32> img, bool icon)
         {
             var shouldUseCompression = false;
             Dispatcher.UIThread.Invoke(() => shouldUseCompression = _main.UseCompression.IsChecked);
@@ -222,10 +227,10 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void OnDragEnter(object? sender, DragEventArgs e)
         {
-            if (e.Data.Contains(DataFormats.FileNames))
-                e.Effects = DragDropEffects.Copy;
+            if (e.DataTransfer.Contains(DataFormat.File))
+                e.DragEffects = DragDropEffects.Copy;
             else
-                e.Effects = DragDropEffects.None;
+                e.DragEffects = DragDropEffects.None;
         }
 
         private void OnDrop(object? sender, DragEventArgs e)
@@ -270,14 +275,13 @@ namespace AuroraAssetEditorLinux.Controls
                 try
                 {
                     await using var stream = await result[0].OpenReadAsync();
-                    var image = Image.FromStream(stream);
-                    // تغيير الحجم إلى 64x64
-                    var resized = new Bitmap(image, new Size(64, 64));
-                    Load(resized, true);
+                    var image = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
+                    image.Mutate(ctx => ctx.Resize(64, 64));
+                    Load(image, true);
                 }
                 catch (Exception ex)
                 {
-                    await MessageBox.Show($"Error loading image: {ex.Message}", "Error");
+                    await CustomMessageBox.ShowAsync(this.FindAncestorOfType<Window>()!, $"Error loading image: {ex.Message}", "Error", false);
                 }
             }
             _main.BusyIndicator.IsVisible = false;
@@ -320,14 +324,13 @@ namespace AuroraAssetEditorLinux.Controls
                 try
                 {
                     await using var stream = await result[0].OpenReadAsync();
-                    var image = Image.FromStream(stream);
-                    // تغيير الحجم إلى 420x96
-                    var resized = new Bitmap(image, new Size(420, 96));
-                    Load(resized, false);
+                    var image = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
+                    image.Mutate(ctx => ctx.Resize(420, 96));
+                    Load(image, false);
                 }
                 catch (Exception ex)
                 {
-                    await MessageBox.Show($"Error loading image: {ex.Message}", "Error");
+                    await CustomMessageBox.ShowAsync(this.FindAncestorOfType<Window>()!, $"Error loading image: {ex.Message}", "Error", false);
                 }
             }
             _main.BusyIndicator.IsVisible = false;
@@ -338,12 +341,12 @@ namespace AuroraAssetEditorLinux.Controls
             return _assetFile.FileData;
         }
 
-        public Image? GetIconImage()
+        public Image<Rgba32>? GetIconImage()
         {
             return _assetFile.GetIcon();
         }
 
-        public Image? GetBannerImage()
+        public Image<Rgba32>? GetBannerImage()
         {
             return _assetFile.GetBanner();
         }

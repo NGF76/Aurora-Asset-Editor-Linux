@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SQLite;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using System.Linq;
 using System.Threading;
 
@@ -134,24 +135,24 @@ namespace AuroraAssetEditorLinux.Classes
                 App.FtpOperations.SendAssetData($"SS{TitleId}.asset", Path, data);
             }
 
-            public byte[]? GetBoxart()
+            public async Task<byte[]?> GetBoxart()
             {
-                return App.FtpOperations.GetAssetData($"GC{TitleId}.asset", Path);
+                return await App.FtpOperations.GetAssetData($"GC{TitleId}.asset", Path);
             }
 
-            public byte[]? GetBackground()
+            public async Task<byte[]?> GetBackground()
             {
-                return App.FtpOperations.GetAssetData($"BK{TitleId}.asset", Path);
+                return await App.FtpOperations.GetAssetData($"BK{TitleId}.asset", Path);
             }
 
-            public byte[]? GetIconBanner()
+            public async Task<byte[]?> GetIconBanner()
             {
-                return App.FtpOperations.GetAssetData($"GL{TitleId}.asset", Path);
+                return await App.FtpOperations.GetAssetData($"GL{TitleId}.asset", Path);
             }
 
-            public byte[]? GetScreenshots()
+            public async Task<byte[]?> GetScreenshots()
             {
-                return App.FtpOperations.GetAssetData($"SS{TitleId}.asset", Path);
+                return await App.FtpOperations.GetAssetData($"SS{TitleId}.asset", Path);
             }
         }
     }

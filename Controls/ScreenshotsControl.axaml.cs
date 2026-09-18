@@ -4,15 +4,21 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 //using Classes;
-using Image = System.Drawing.Image;
-using Size = System.Drawing.Size;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
+using AuroraAssetEditorLinux.Dialogs;
 using AuroraAssetEditorLinux.Controls;
 using AuroraAssetEditorLinux.Classes;
 
@@ -22,7 +28,7 @@ namespace AuroraAssetEditorLinux.Controls
     {
         private readonly MainWindow _main;
         private AuroraAsset.AssetFile _assetFile;
-        private Image[] _screenshots;
+        private Image<Rgba32>[] _screenshots;
         private bool _hasPreview;
 
         public bool HavePreview => _hasPreview;
@@ -35,7 +41,7 @@ namespace AuroraAssetEditorLinux.Controls
             _assetFile = new AuroraAsset.AssetFile();
             
             var maxScreenshots = AuroraAsset.AssetType.ScreenshotEnd - AuroraAsset.AssetType.ScreenshotStart;
-            _screenshots = new Image[maxScreenshots];
+            _screenshots = new Image<Rgba32>[maxScreenshots];
 
             // ربط أحداث السحب والإفلات
             this.AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
@@ -96,7 +102,7 @@ namespace AuroraAssetEditorLinux.Controls
             }
         }
 
-        private void SetPreview(Image? img)
+        private void SetPreview(Image<Rgba32>? img)
         {
             if (img == null)
             {
@@ -106,7 +112,7 @@ namespace AuroraAssetEditorLinux.Controls
             }
 
             using var ms = new MemoryStream();
-            img.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            img.SaveAsPng(ms);
             ms.Seek(0, SeekOrigin.Begin);
             PreviewImg.Source = new Bitmap(ms);
             _hasPreview = true;
@@ -173,7 +179,7 @@ namespace AuroraAssetEditorLinux.Controls
         {
             SetPreview(null);
             _assetFile = new AuroraAsset.AssetFile();
-            _screenshots = new Image[AuroraAsset.AssetType.ScreenshotEnd - AuroraAsset.AssetType.ScreenshotStart];
+            _screenshots = new Image<Rgba32>[AuroraAsset.AssetType.ScreenshotEnd - AuroraAsset.AssetType.ScreenshotStart];
             
             // تحديث القائمة المنسدلة
             CBox.Items.Clear();
@@ -187,11 +193,25 @@ namespace AuroraAssetEditorLinux.Controls
             _assetFile.SetScreenshots(asset);
             Dispatcher.UIThread.Invoke(() =>
             {
-                _screenshots = _assetFile.GetScreenshots();
+                var screenshots = _assetFile.GetScreenshots();
+                var convertedScreenshots = new Image<Rgba32>[screenshots.Length];
+
+                for (var i = 0; i < screenshots.Length; i++)
+                {
+                    if (screenshots[i] == null) continue;
+
+                    using var ms = new MemoryStream();
+                    screenshots[i].SaveAsPng(ms);
+                    ms.Position = 0;
+                    convertedScreenshots[i] = SixLabors.ImageSharp.Image.Load<Rgba32>(ms);
+                }
+
+                _screenshots = convertedScreenshots;
+
                 // التأكد من أن المصفوفة بالحجم الصحيح
                 if (_screenshots.Length < AuroraAsset.AssetType.ScreenshotEnd - AuroraAsset.AssetType.ScreenshotStart)
                 {
-                    var newArray = new Image[AuroraAsset.AssetType.ScreenshotEnd - AuroraAsset.AssetType.ScreenshotStart];
+                    var newArray = new Image<Rgba32>[AuroraAsset.AssetType.ScreenshotEnd - AuroraAsset.AssetType.ScreenshotStart];
                     Array.Copy(_screenshots, newArray, _screenshots.Length);
                     _screenshots = newArray;
                 }
@@ -199,7 +219,7 @@ namespace AuroraAssetEditorLinux.Controls
             });
         }
 
-        public void Load(Image img, bool replace)
+        public void Load(Image<Rgba32> img, bool replace)
         {
             var index = -1;
 
@@ -234,7 +254,7 @@ namespace AuroraAssetEditorLinux.Controls
 
             if (index == -1)
             {
-                _ = MessageBox.Show("There is no space left for new screenshots :(", "No space left");
+                _ = CustomMessageBox.ShowAsync(this.FindAncestorOfType<Window>()!, "There is no space left for new screenshots :(", "No space left", false);
                 return;
             }
 
@@ -276,10 +296,10 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void OnDragEnter(object? sender, DragEventArgs e)
         {
-            if (e.Data.Contains(DataFormats.FileNames))
-                e.Effects = DragDropEffects.Copy;
+            if (e.DataTransfer.Contains(DataFormat.File))
+                e.DragEffects = DragDropEffects.Copy;
             else
-                e.Effects = DragDropEffects.None;
+                e.DragEffects = DragDropEffects.None;
         }
 
         private void OnDrop(object? sender, DragEventArgs e)
@@ -332,13 +352,13 @@ namespace AuroraAssetEditorLinux.Controls
                 try
                 {
                     await using var stream = await result[0].OpenReadAsync();
-                    var image = Image.FromStream(stream);
-                    var resized = new Bitmap(image, new Size(1000, 562));
-                    Load(resized, true);
+                    var image = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
+                    image.Mutate(ctx => ctx.Resize(1000, 562));
+                    Load(image, true);
                 }
                 catch (Exception ex)
                 {
-                    await MessageBox.Show($"Error loading image: {ex.Message}", "Error");
+                    await CustomMessageBox.ShowAsync(this.FindAncestorOfType<Window>()!, $"Error loading image: {ex.Message}", "Error", false);
                 }
             }
             _main.BusyIndicator.IsVisible = false;
@@ -373,19 +393,19 @@ namespace AuroraAssetEditorLinux.Controls
                     {
                         if (!SpaceLeft())
                         {
-                            await MessageBox.Show("No space left for more screenshots.", "No Space");
+                            await CustomMessageBox.ShowAsync(this.FindAncestorOfType<Window>()!, "No space left for more screenshots.", "No Space", false);
                             break;
                         }
 
                         await using var stream = await file.OpenReadAsync();
-                        var image = Image.FromStream(stream);
-                        var resized = new Bitmap(image, new Size(1000, 562));
-                        Load(resized, false);
+                        var image = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
+                        image.Mutate(ctx => ctx.Resize(1000, 562));
+                        Load(image, false);
                     }
                 }
                 catch (Exception ex)
                 {
-                    await MessageBox.Show($"Error loading images: {ex.Message}", "Error");
+                    await CustomMessageBox.ShowAsync(this.FindAncestorOfType<Window>()!, $"Error loading images: {ex.Message}", "Error", false);
                 }
             }
             _main.BusyIndicator.IsVisible = false;

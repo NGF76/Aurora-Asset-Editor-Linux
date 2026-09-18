@@ -211,15 +211,5 @@ namespace AuroraAssetEditorLinux.Classes
             return $"TitleID: {TitleId:X8} - Variant: {SubFolder}";
         }
     }
-
-    // فئة StatusArgs (إذا لم تكن موجودة بالفعل)
-    public class StatusArgs : EventArgs
-    {
-        public StatusArgs(string statusMessage)
-        {
-            StatusMessage = statusMessage;
-        }
-
-        public string StatusMessage { get; }
-    }
 }
+   
