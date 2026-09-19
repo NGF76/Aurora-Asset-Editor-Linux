@@ -93,8 +93,8 @@ replaceable with one another or with a standard PNG/DDS decoder.
 
 ## To-Do / Roadmap
 
-- [ ] Complete conversion of all WPF controls to Avalonia
-- [ ] Fix remaining build errors
+- [Done] Complete conversion of all WPF controls to Avalonia
+- [Done] Fix remaining build errors
 - [ ] Improve performance for large asset files
 - [ ] Add more locale/language support
 - [ ] Package as .deb / .AppImage for easy Linux installation
