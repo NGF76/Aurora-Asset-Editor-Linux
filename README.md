@@ -38,7 +38,7 @@ The original tool was built using WPF (Windows Presentation Foundation) and was 
 
 ## Tech Stack
 
-- .NET 8
+- .NET 10
 - C# 12
 - Avalonia UI 11.0.10
 - SixLabors.ImageSharp (replaced System.Drawing)
