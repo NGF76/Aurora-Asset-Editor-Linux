@@ -65,9 +65,29 @@ dotnet run
 
 ## Supported Platforms
 
-- Windows (x64) – Compatible
-- Linux (x64) – Fully tested
+- Windows (x86/32-bit native converter) – Compatible
+- Linux (x64) – UI and managed features work; uncompressed Aurora `.asset` images use the native C# codec
 - macOS (x64) – Untested (should work)
+
+### Aurora asset conversion on Linux
+
+`AuroraAsset.dll` and `msvcr100.dll` are 32-bit Windows PE libraries. They cannot
+be loaded by a native Linux .NET process. The managed C# codec handles the
+uncompressed ARGB variant, but existing compressed Xenos textures still require
+the original converter.
+
+For full Aurora asset conversion, publish the Windows build and run that build
+with Wine (including Wine's 32-bit support):
+
+```bash
+dotnet publish -c Release -r win-x86 --self-contained true
+wine bin/Release/net10.0/win-x86/publish/AuroraAssetEditorLinux.exe
+```
+
+The Windows build copies `AuroraAsset.dll` and `msvcr100.dll` beside the
+executable automatically. A native Linux implementation would require a
+separate converter for Aurora's Xbox texture format; these Windows DLLs are not
+replaceable with one another or with a standard PNG/DDS decoder.
 
 ---
 

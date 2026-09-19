@@ -2,6 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
+    <RuntimeIdentifiers>linux-x64;win-x86</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
@@ -22,5 +23,10 @@
     <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
     <AvaloniaResource Include="Icons\Aurour.png"/> 
+  </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) Or $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win'))">
+    <None Include="AuroraAsset.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="msvcr100.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

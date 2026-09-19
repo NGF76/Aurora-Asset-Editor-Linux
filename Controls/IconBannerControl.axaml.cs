@@ -107,7 +107,7 @@ namespace AuroraAssetEditorLinux.Controls
             var options = new FilePickerSaveOptions
             {
                 Title = "Save Icon/Banner To File",
-                SuggestedFileName = "icon_banner.asset",
+                SuggestedFileName = _main.GetAssetFilename("GL", "icon_banner.asset"),
                 FileTypeChoices = new[]
                 {
                     new FilePickerFileType("Asset File") { Patterns = new[] { "*.asset" } }

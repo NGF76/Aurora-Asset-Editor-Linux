@@ -126,7 +126,7 @@ namespace AuroraAssetEditorLinux.Controls
             var options = new FilePickerSaveOptions
             {
                 Title = "Save Screenshots To File",
-                SuggestedFileName = "screenshots.asset",
+                SuggestedFileName = _main.GetAssetFilename("SS", "screenshots.asset"),
                 FileTypeChoices = new[]
                 {
                     new FilePickerFileType("Asset File") { Patterns = new[] { "*.asset" } }

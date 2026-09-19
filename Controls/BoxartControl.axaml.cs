@@ -102,7 +102,7 @@ namespace AuroraAssetEditorLinux.Controls
             var options = new FilePickerSaveOptions
             {
                 Title = "Save Cover Asset",
-                SuggestedFileName = "cover.asset",
+                SuggestedFileName = _main.GetAssetFilename("GC", "cover.asset"),
                 FileTypeChoices = new[]
                 {
                     new FilePickerFileType("Asset File") { Patterns = new[] { "*.asset" } }

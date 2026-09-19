@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
@@ -166,6 +167,14 @@ namespace AuroraAssetEditorLinux
             });
         }
 
+        internal string GetAssetFilename(string prefix, string fallback)
+        {
+            var titleId = GlobalState.CurrentGame.TitleId?.Trim().ToUpperInvariant();
+            return !string.IsNullOrEmpty(titleId) && Regex.IsMatch(titleId, "^[0-9A-F]{8}$")
+                ? $"{prefix}{titleId}.asset"
+                : fallback;
+        }
+
         private async void CreateNewAssetMenu_Click(object? sender, EventArgs e)
         {
             _boxart.Reset();
@@ -236,12 +245,16 @@ namespace AuroraAssetEditorLinux
                 .FirstOrDefault();
         }
 
-        private void SaveAllAssetsMenu_Click(object? sender, EventArgs e)
+        private async void SaveAllAssetsMenu_Click(object? sender, EventArgs e)
         {
-            _boxart.SaveAsset();
-            _background.SaveAsset();
-            _screenshots.Save();
-            _iconBanner.Save();
+            var folder = await FolderBrowserDialogAsync("Select a folder to save all Aurora assets");
+            if (string.IsNullOrWhiteSpace(folder))
+                return;
+
+            _boxart.Save(Path.Combine(folder, GetAssetFilename("GC", "cover.asset")));
+            _background.Save(Path.Combine(folder, GetAssetFilename("BK", "background.asset")));
+            _iconBanner.Save(Path.Combine(folder, GetAssetFilename("GL", "icon_banner.asset")));
+            _screenshots.Save(Path.Combine(folder, GetAssetFilename("SS", "screenshots.asset")));
         }
 
         // ============ دوال تحميل الملفات ============

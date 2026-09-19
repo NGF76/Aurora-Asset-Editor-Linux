@@ -106,7 +106,7 @@ namespace AuroraAssetEditorLinux.Controls
             var options = new FilePickerSaveOptions
             {
                 Title = "Save Background Asset",
-                SuggestedFileName = "background.asset",
+                SuggestedFileName = _main.GetAssetFilename("BK", "background.asset"),
                 FileTypeChoices = new[]
                 {
                     new FilePickerFileType("Asset File") { Patterns = new[] { "*.asset" } }
