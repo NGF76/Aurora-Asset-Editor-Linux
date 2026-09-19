@@ -21,5 +21,6 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.4" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+    <AvaloniaResource Include="Icons\Aurour.png"/> 
   </ItemGroup>
 </Project>

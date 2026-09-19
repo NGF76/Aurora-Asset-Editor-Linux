@@ -238,8 +238,8 @@ namespace AuroraAssetEditorLinux
 
         private void SaveAllAssetsMenu_Click(object? sender, EventArgs e)
         {
-            _boxart.Save();
-            _background.Save();
+            _boxart.SaveAsset();
+            _background.SaveAsset();
             _screenshots.Save();
             _iconBanner.Save();
         }

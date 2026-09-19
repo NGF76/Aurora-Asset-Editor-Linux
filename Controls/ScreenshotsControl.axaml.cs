@@ -159,20 +159,15 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void SaveData()
         {
-            var index = 1;
             var shouldUseCompression = false;
             Dispatcher.UIThread.Invoke(() => shouldUseCompression = _main.UseCompression.IsChecked);
 
-            foreach (var img in _screenshots.Where(img => img != null))
+            for (var index = 0; index < _screenshots.Length; index++)
             {
-                if (!img.Equals(_assetFile.GetScreenshot(index)))
-                    _assetFile.SetScreenshot(img, index, shouldUseCompression);
-                index++;
+                var screenshot = _screenshots[index];
+                if (!Equals(screenshot, _assetFile.GetScreenshot(index + 1)))
+                    _assetFile.SetScreenshot(screenshot, index + 1, shouldUseCompression);
             }
-
-            // إزالة الفتحات غير المستخدمة
-            for (; index - 1 < _screenshots.Length; index++)
-                _assetFile.SetScreenshot(null, index, false);
         }
 
         public void Reset()
@@ -193,28 +188,20 @@ namespace AuroraAssetEditorLinux.Controls
             _assetFile.SetScreenshots(asset);
             Dispatcher.UIThread.Invoke(() =>
             {
-                var screenshots = _assetFile.GetScreenshots();
-                var convertedScreenshots = new Image<Rgba32>[screenshots.Length];
+                var convertedScreenshots = new Image<Rgba32>[_screenshots.Length];
 
-                for (var i = 0; i < screenshots.Length; i++)
+                for (var i = 0; i < convertedScreenshots.Length; i++)
                 {
-                    if (screenshots[i] == null) continue;
+                    var screenshot = _assetFile.GetScreenshot(i + 1);
+                    if (screenshot == null) continue;
 
                     using var ms = new MemoryStream();
-                    screenshots[i].SaveAsPng(ms);
+                    screenshot.SaveAsPng(ms);
                     ms.Position = 0;
                     convertedScreenshots[i] = SixLabors.ImageSharp.Image.Load<Rgba32>(ms);
                 }
 
                 _screenshots = convertedScreenshots;
-
-                // التأكد من أن المصفوفة بالحجم الصحيح
-                if (_screenshots.Length < AuroraAsset.AssetType.ScreenshotEnd - AuroraAsset.AssetType.ScreenshotStart)
-                {
-                    var newArray = new Image<Rgba32>[AuroraAsset.AssetType.ScreenshotEnd - AuroraAsset.AssetType.ScreenshotStart];
-                    Array.Copy(_screenshots, newArray, _screenshots.Length);
-                    _screenshots = newArray;
-                }
                 CBox_SelectionChanged(null, null);
             });
         }

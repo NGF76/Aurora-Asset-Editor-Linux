@@ -217,22 +217,14 @@ namespace AuroraAssetEditorLinux.Classes
 
             private static bool ProcessImageToAsset(byte[] data, int width, int height, bool useCompression, ref byte[] header, ref byte[] video)
             {
-                // TODO: تنفيذ معالجة الصور هنا
-                // يمكن استخدام SixLabors.ImageSharp أو مكتبة أخرى
-                // حالياً نعيد true مع بيانات فارغة
-                header = new byte[52];
-                video = new byte[0];
-                return true;
+                return PhoenixTools.AuroraAssetDll.ProcessImageToAsset(
+                    ref data, width, height, useCompression, ref header, ref video);
             }
 
             private static bool ProcessAssetToImage(ref byte[] header, ref byte[] videoData, ref byte[] imageData, out int imageWidth, out int imageHeight)
             {
-                // TODO: تنفيذ معالجة الصور هنا
-                // حالياً نعيد بيانات فارغة
-                imageWidth = 0;
-                imageHeight = 0;
-                imageData = new byte[0];
-                return true;
+                return PhoenixTools.AuroraAssetDll.ProcessAssetToImage(
+                    ref header, ref videoData, ref imageData, out imageWidth, out imageHeight);
             }
 
             private void SetImage(AssetFile asset, int index)
@@ -283,6 +275,7 @@ namespace AuroraAssetEditorLinux.Classes
             }
 
             public void SetBoxart(AssetFile asset) => SetImage(asset, (int)AssetType.Boxart);
+            public void SetBackground(AssetFile asset) => SetImage(asset, (int)AssetType.Background);
             public void SetBackground(System.Drawing.Image img, AssetFile asset) => SetImage(asset, (int)AssetType.Background);
             public void SetIcon(AssetFile asset) => SetImage(asset, (int)AssetType.Icon);
             public void SetBanner(AssetFile asset) => SetImage(asset, (int)AssetType.Banner);
@@ -291,16 +284,6 @@ namespace AuroraAssetEditorLinux.Classes
             {
                 for (var i = (int)AssetType.ScreenshotStart; i < (int)AssetType.ScreenshotEnd; i++)
                     SetImage(asset, i);
-            }
-
-            internal void SetBackground(System.Drawing.Image img, bool shouldUseCompression)
-            {
-                throw new NotImplementedException();
-            }
-
-            internal void SetBackground(AssetFile asset)
-            {
-                throw new NotImplementedException();
             }
         }
 

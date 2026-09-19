@@ -98,6 +98,24 @@ namespace AuroraAssetEditorLinux.Controls
             _ = SaveFileAsync(options);
         }
 
+        public void SaveAsset()
+        {
+            var storageProvider = TopLevel.GetTopLevel(this)?.StorageProvider;
+            if (storageProvider == null) return;
+
+            var options = new FilePickerSaveOptions
+            {
+                Title = "Save Background Asset",
+                SuggestedFileName = "background.asset",
+                FileTypeChoices = new[]
+                {
+                    new FilePickerFileType("Asset File") { Patterns = new[] { "*.asset" } }
+                }
+            };
+
+            _ = SaveFileAsync(options);
+        }
+
         private async Task SaveFileAsync(FilePickerSaveOptions options)
         {
             var storageProvider = TopLevel.GetTopLevel(this)?.StorageProvider;

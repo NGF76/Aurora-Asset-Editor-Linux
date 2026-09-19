@@ -4,12 +4,14 @@
         xmlns:drag="clr-namespace:Avalonia.Input;assembly=Avalonia.Base"
         x:Class="AuroraAssetEditorLinux.MainWindow"
         Title="Aurora Asset Editor Linux v{0}.{1}.{2} by NGF76"
+        Icon="/Icons/Aurour.png"
         Width="550"
         Height="350"
         MinWidth="550"
         MinHeight="350"
         drag:DragDrop.AllowDrop="True"
         Background="White">
+
 
     <Grid>
         <Grid ZIndex="0">
