@@ -65,7 +65,6 @@ dotnet run
 
 Method 2: Direct cloning of the master branch
 
-```bash
 git clone -b master https://github.com/NGF76/Aurora-Asset-Editor-Linux.git
 
 ---
