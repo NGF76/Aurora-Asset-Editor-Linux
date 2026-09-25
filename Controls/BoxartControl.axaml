@@ -5,6 +5,13 @@
              Background="WhiteSmoke">
     
     <Grid>
+        <TextBlock x:Name="PlaceholderText"
+                   Text="No cover loaded"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="Gray"
+                   IsVisible="True" />
+
         <Expander Header="Preview"
                   IsExpanded="True"
                   VerticalAlignment="Top"
@@ -18,11 +25,11 @@
                      MaxHeight="600">
                 
                 <Image x:Name="PreviewImg"
+                      Stretch="Uniform"
                        MaxWidth="900"
                        MaxHeight="600"
                        Width="900"
-                       Height="600"
-                       >
+                      Height="600">
                     
                     <Image.ContextMenu>
                         <ContextMenu>

@@ -62,16 +62,9 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void LoadDefaultImage()
         {
-            try
-            {
-                var uri = new Uri("avares://AuroraAssetEditorLinux/Assets/Placeholders/cover.png");
-                PreviewImg.Source = new Bitmap(AssetLoader.Open(uri));
-                _hasPreview = false;
-            }
-            catch
-            {
-                PreviewImg.Source = null;
-            }
+            PreviewImg.Source = null;
+            PlaceholderText.IsVisible = true;
+            _hasPreview = false;
         }
 
         public void Save()
@@ -155,12 +148,15 @@ namespace AuroraAssetEditorLinux.Controls
             }
 
             _memoryStream?.Close();
-            _memoryStream = new MemoryStream();
-            img.SaveAsPng(_memoryStream);
+            using var previewStream = new MemoryStream();
+            img.SaveAsPng(previewStream);
+            var previewBytes = previewStream.ToArray();
+            _memoryStream = new MemoryStream(previewBytes, writable: false);
             _memoryStream.Seek(0, SeekOrigin.Begin);
 
             var bitmap = new Bitmap(_memoryStream);
             PreviewImg.Source = bitmap;
+            PlaceholderText.IsVisible = false;
             _hasPreview = true;
         }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -37,12 +38,22 @@ namespace AuroraAssetEditorLinux.Classes
         private static Image<Rgba32> RawArgbToImage(byte[] raw, int width, int height)
         {
             var image = new Image<Rgba32>(width, height);
+            var hasAlpha = false;
+            for (var index = 0; index < raw.Length; index += 4)
+            {
+                if (raw[index] != 0)
+                {
+                    hasAlpha = true;
+                    break;
+                }
+            }
+
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     int idx = (y * width + x) * 4;
-                    image[x, y] = new Rgba32(raw[idx + 1], raw[idx + 2], raw[idx + 3], raw[idx]);
+                    image[x, y] = new Rgba32(raw[idx + 1], raw[idx + 2], raw[idx + 3], hasAlpha ? raw[idx] : (byte)255);
                 }
             }
             return image;
@@ -106,15 +117,20 @@ namespace AuroraAssetEditorLinux.Classes
                 DataOffset = 20 + (EntryTable.Entries.Length * 64);
                 DataOffset += 2048 - (DataOffset % 2048);
 
-                var offset = DataOffset;
                 for (var i = 0; i < EntryTable.Entries.Length; i++)
                 {
-                    if (EntryTable.Entries[i].Size <= 0)
+                    var entry = EntryTable.Entries[i];
+                    if (entry.Size <= 0)
                         continue;
-                    var tmp = new byte[EntryTable.Entries[i].Size];
-                    Buffer.BlockCopy(data, offset, tmp, 0, tmp.Length);
+
+                    var dataOffset = checked(DataOffset + (int)entry.Offset);
+                    var dataSize = checked((int)entry.Size);
+                    if (dataOffset < 0 || dataOffset > data.Length - dataSize)
+                        throw new InvalidDataException($"Asset entry {i} points outside the file.");
+
+                    var tmp = new byte[dataSize];
+                    Buffer.BlockCopy(data, dataOffset, tmp, 0, dataSize);
                     SetImage(tmp, i);
-                    offset += tmp.Length;
                 }
             }
 

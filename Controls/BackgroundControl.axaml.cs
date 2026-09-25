@@ -158,20 +158,9 @@ namespace AuroraAssetEditorLinux.Controls
                 return;
             }
 
-            var previewBytes = _assetFile.FileData;
-            if (previewBytes == null || previewBytes.Length == 0)
-            {
-                _memoryStream?.Close();
-                _memoryStream = new MemoryStream();
-            img.SaveAsPng(_memoryStream);
-            _memoryStream.Seek(0, SeekOrigin.Begin);
-            PreviewImg.Source = new Bitmap(_memoryStream);
-            _hasPreview = true;
-            return;
-            }
-
             _memoryStream?.Close();
-            _memoryStream = new MemoryStream(previewBytes, writable: false);
+            _memoryStream = new MemoryStream();
+            img.SaveAsPng(_memoryStream);
             _memoryStream.Seek(0, SeekOrigin.Begin);
 
             var previewBitmap = new Bitmap(_memoryStream);

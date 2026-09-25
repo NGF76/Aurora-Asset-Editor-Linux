@@ -66,7 +66,7 @@ namespace AuroraAssetEditorLinux
         public MainWindow()
         {
             InitializeComponent();
-            
+
             var ver = Assembly.GetAssembly(typeof(MainWindow))?.GetName().Version;
             if (ver != null)
             {
@@ -229,7 +229,7 @@ namespace AuroraAssetEditorLinux
             {
                 ".png", ".bmp", ".jpg", ".jpeg", ".gif", ".tif", ".tiff"
             };
-            var images = Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
+            var images = Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories)
                 .Where(file => supportedExtensions.Contains(Path.GetExtension(file)))
                 .ToArray();
 
@@ -241,7 +241,8 @@ namespace AuroraAssetEditorLinux
                         || name.Contains("boxart", StringComparison.OrdinalIgnoreCase)
                         || name.Contains("front", StringComparison.OrdinalIgnoreCase);
                 })
-                .ThenBy(file => file, StringComparer.OrdinalIgnoreCase)
+                .ThenByDescending(file => File.GetLastWriteTimeUtc(file))
+                    .ThenBy(file => file, StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault();
         }
 
@@ -356,15 +357,15 @@ namespace AuroraAssetEditorLinux
         }
 
         private async Task ShowMessageAsync(string message, string title)
-{
-       //  صحيح (Avalonia مع CustomMessageBox)
-        await CustomMessageBox.ShowAsync(
-        this,           // النافذة الأم
-        message,
-        title,
-        false           // لا حاجة لزر Cancel
-       );
-}
+        {
+            //  صحيح (Avalonia مع CustomMessageBox)
+            await CustomMessageBox.ShowAsync(
+            this,           // النافذة الأم
+            message,
+            title,
+            false           // لا حاجة لزر Cancel
+           );
+        }
 
         // ============ دوال المساعدة ============
 
@@ -446,7 +447,7 @@ namespace AuroraAssetEditorLinux
                         .Select(p => p.Trim())
                         .Where(p => !string.IsNullOrEmpty(p))
                         .ToArray();
-                    
+
                     if (patterns.Length > 0)
                     {
                         result.Add(new FilePickerFileType(name)
@@ -461,7 +462,7 @@ namespace AuroraAssetEditorLinux
 
         // ============ دوال السحب والإفلات ============
 
-        internal void OnDragEnter(object? sender, DragEventArgs  e)
+        internal void OnDragEnter(object? sender, DragEventArgs e)
         {
             if (e.DataTransfer.Contains(DataFormat.File))
                 e.DragEffects = DragDropEffects.Copy;
@@ -472,7 +473,7 @@ namespace AuroraAssetEditorLinux
         internal async void DragDrop(Control sender, DragEventArgs e)
         {
             if (!e.DataTransfer.Contains(DataFormat.File)) return;
-            
+
             var files = e.DataTransfer.TryGetFiles()?.Select(f => f.Path.LocalPath).ToArray() ?? Array.Empty<string>();
             BusyIndicator.IsVisible = true;
             try
