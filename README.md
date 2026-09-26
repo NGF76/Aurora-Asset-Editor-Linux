@@ -101,10 +101,10 @@ replaceable with one another or with a standard PNG/DDS decoder.
 
 - [Done] Complete conversion of all WPF controls to Avalonia
 - [Done] Fix remaining build errors
-- [ ] Improve performance for large asset files
+- [Done] Improve performance for large asset files
 - [ ] Add more locale/language support
-- [ ] Package as .deb / .AppImage for easy Linux installation
-- [ ] Write user documentation
+- [Done] Package as .deb / .AppImage for easy Linux installation
+- [Done] Write user documentation
 
 ---
 
