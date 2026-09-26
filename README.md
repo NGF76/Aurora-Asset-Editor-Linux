@@ -6,8 +6,9 @@
 
 ## Status
 
-**This project is currently under active development.**  
-Some features may be incomplete or unstable. Contributions and feedback are welcome.
+**Published and available.**
+
+The project is now released. Feedback and contributions are still welcome.
 
 ---
 
