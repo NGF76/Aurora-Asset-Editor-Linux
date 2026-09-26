@@ -21,18 +21,15 @@ internal static class XenosTextureCodec
         if (width <= 0 || height <= 0 || width > 8192 || height > 8192)
             return false;
 
-        var pitch = ((width + 31) / 32) * 32;
-        if (video.Length == checked(pitch * height * 4))
+        var pitch = ((width + 63) / 64) * 64;
+        var storageHeight = ((height + 31) / 32) * 32;
+        if (video.Length == checked(pitch * storageHeight * 4))
         {
             argb = new byte[checked(width * height * 4)];
+            var rowBytes = checked(width * 4);
             for (var y = 0; y < height; y++)
             {
-                for (var x = 0; x < width; x++)
-                {
-                    var source = TiledAddress2D(x, y, pitch);
-                    var destination = (y * width + x) * 4;
-                    Buffer.BlockCopy(video, source, argb, destination, 4);
-                }
+                Buffer.BlockCopy(video, y * pitch * 4, argb, y * rowBytes, rowBytes);
             }
 
             return true;
@@ -72,31 +69,14 @@ internal static class XenosTextureCodec
         if (useCompression)
             return false;
 
-        var pitch = ((width + 31) / 32) * 32;
-        var tiled = new byte[checked(pitch * height * 4)];
+        var pitch = ((width + 63) / 64) * 64;
+        var storageHeight = ((height + 31) / 32) * 32;
+        var padded = new byte[checked(pitch * storageHeight * 4)];
+        var rowBytes = checked(width * 4);
         for (var y = 0; y < height; y++)
-        {
-            for (var x = 0; x < width; x++)
-            {
-                var source = (y * width + x) * 4;
-                var destination = TiledAddress2D(x, y, pitch);
-                if (destination < 0 || destination > tiled.Length - 4)
-                    return false;
+            Buffer.BlockCopy(argb, y * rowBytes, padded, y * pitch * 4, rowBytes);
 
-                Buffer.BlockCopy(argb, source, tiled, destination, 4);
-            }
-        }
-
-        video = tiled;
+        video = padded;
         return true;
     }
-
-    private static int TiledAddress2D(int x, int y, int pitch)
-    {
-        var macro = ((x >> 5) + (y >> 5) * (pitch >> 5)) << 9;
-        var micro = (((y & 0x1f) >> 1) << 3) + (x & 7);
-        var offset = macro + ((micro << 2) & 0xf) + (((micro << 2) & 0xf0) << 1);
-        return (offset & ~0x1ff) + ((offset & 0xf0) >> 1) + (offset & 0xf) + ((offset & 0x100) >> 1);
-    }
-
 }
