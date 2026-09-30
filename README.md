@@ -111,6 +111,10 @@ replaceable with one another or with a standard PNG/DDS decoder.
 
 ## Disclaimer
 
+This software is provided "AS IS", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement.
+
+In no event shall the developer be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
+
 This project is a fork of the original work by Swizzy. All credits for the original logic, asset structure, and FTP handling belong to the original author. The UI and cross-platform compatibility changes are the work of this fork's maintainer (NGF76).
 
 This project is not affiliated with the original author or XboxUnity. It is shared under the same open-source spirit of the original work.
