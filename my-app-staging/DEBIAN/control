@@ -1,0 +1,9 @@
+Package: aurora-asset-editor
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: NGF76 <your-email@example.com>
+Description: Aurora Asset Editor for Linux
+ A simple asset editor for Aurora games.
+Depends: libx11-6, libice6, libsm6, libfontconfig1, libgl1-mesa-dev, libgbm-dev

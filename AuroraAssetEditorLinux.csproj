@@ -5,6 +5,9 @@
     <RuntimeIdentifiers>linux-x64;win-x86</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <DebianPackage>true</DebianPackage>
+<DebianPackageDependencies>libc6, libgcc1, libstdc++6</DebianPackageDependencies>
+<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>

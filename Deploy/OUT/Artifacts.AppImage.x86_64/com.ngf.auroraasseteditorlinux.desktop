@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Name=Aurora Asset Editor Linux
+Icon=com.ngf.auroraasseteditorlinux
+StartupWMClass=AuroraAssetEditorLinux
+Comment=A tool for editing Aurora assets.
+Exec=/usr/bin/AuroraAssetEditorLinux
+TryExec=/usr/bin/AuroraAssetEditorLinux
+NoDisplay=false
+Terminal=false
+Categories=Utility;
+X-AppImage-Name=com.ngf.auroraasseteditorlinux
+X-AppImage-Version=1.0.0
+X-AppImage-Arch=x86_64
+MimeType=
+Keywords=

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Aurora Asset Editor Linux
+Comment=Editor for Aurora assets
+Exec=aurora-asset-editor
+Icon=aurora-asset-editor
+Terminal=false
+Type=Application
+Categories=Utility;Development;
+EOF 
+
