@@ -6,8 +6,9 @@
 
 ## Status
 
-**This project is currently under active development.**  
-Some features may be incomplete or unstable. Contributions and feedback are welcome.
+**Published and available.**
+
+The project is now released. Feedback and contributions are still welcome.
 
 ---
 
@@ -101,14 +102,18 @@ replaceable with one another or with a standard PNG/DDS decoder.
 
 - [Done] Complete conversion of all WPF controls to Avalonia
 - [Done] Fix remaining build errors
-- [ ] Improve performance for large asset files
+- [Done] Improve performance for large asset files
 - [ ] Add more locale/language support
-- [ ] Package as .deb / .AppImage for easy Linux installation
-- [ ] Write user documentation
+- [Done] Package as .deb / .AppImage for easy Linux installation
+- [Done] Write user documentation
 
 ---
 
 ## Disclaimer
+
+This software is provided "AS IS", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement.
+
+In no event shall the developer be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
 
 This project is a fork of the original work by Swizzy. All credits for the original logic, asset structure, and FTP handling belong to the original author. The UI and cross-platform compatibility changes are the work of this fork's maintainer (NGF76).
 
