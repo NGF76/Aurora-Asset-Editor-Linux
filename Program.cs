@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using System;
+using Avalonia.X11;
 
 namespace AuroraAssetEditorLinux;
 
@@ -16,9 +17,15 @@ class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            .With(new X11PlatformOptions
+            {
+                UseDBusMenu = false,
+                UseDBusFilePicker = false,
+            })
 #if DEBUG
             .WithDeveloperTools()
 #endif
             .WithInterFont()
             .LogToTrace();
+
 }
