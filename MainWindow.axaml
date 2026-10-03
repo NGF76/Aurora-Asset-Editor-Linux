@@ -3,7 +3,7 @@
         xmlns:local="clr-namespace:AuroraAssetEditorLinux.Helpers"
         xmlns:drag="clr-namespace:Avalonia.Input;assembly=Avalonia.Base"
         x:Class="AuroraAssetEditorLinux.MainWindow"
-        Title="Aurora Asset Editor Linux v{0}.{1}.{2} by NGF76"
+        Title="Aurora Asset Editor Linux v{0}.{0}.{2} by NGF76"
         Icon="/Icons/Aurour.png"
         Width="550"
         Height="350"
