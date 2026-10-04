@@ -123,8 +123,13 @@ This project is not affiliated with the original author or XboxUnity. It is shar
 
 ## License
 
-This project is released under the same open-source terms as the original work.  
-Please refer to the original repository for licensing details.
+The original Aurora Asset Editor by Swizzy is released under 
+**The Unlicense** (public domain).
+
+This fork inherits the same license — you are free to copy, 
+modify, distribute, and use it for any purpose.
+
+See: https://unlicense.org 
 
 ---
 
