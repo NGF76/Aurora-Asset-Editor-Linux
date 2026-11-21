@@ -18,6 +18,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using AuroraAssetEditorLinux.Controls;
 using AuroraAssetEditorLinux.Classes;
+using AuroraAssetEditorLinux.Helpers;
 
 namespace AuroraAssetEditorLinux.Controls
 {
@@ -25,8 +26,6 @@ namespace AuroraAssetEditorLinux.Controls
     {
         private readonly MainWindow _main;
         private AuroraAsset.AssetFile _assetFile;
-        private MemoryStream? _iconMemoryStream;
-        private MemoryStream? _bannerMemoryStream;
         private bool _hasIcon;
         private bool _hasBanner;
 
@@ -82,21 +81,11 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void LoadDefaultImages()
         {
-            try
-            {
-                var iconUri = new Uri("avares://AuroraAssetEditor/Assets/Placeholders/icon.png");
-                PreviewIcon.Source = new Bitmap(AssetLoader.Open(iconUri));
-                _hasIcon = false;
+            ImagePreview.SetSource(PreviewIcon, ImagePreview.LoadPlaceholder("icon"));
+            _hasIcon = false;
 
-                var bannerUri = new Uri("avares://AuroraAssetEditor/Assets/Placeholders/banner.png");
-                PreviewBanner.Source = new Bitmap(AssetLoader.Open(bannerUri));
-                _hasBanner = false;
-            }
-            catch
-            {
-                PreviewIcon.Source = null;
-                PreviewBanner.Source = null;
-            }
+            ImagePreview.SetSource(PreviewBanner, ImagePreview.LoadPlaceholder("banner"));
+            _hasBanner = false;
         }
 
         public void Save()
@@ -140,10 +129,6 @@ namespace AuroraAssetEditorLinux.Controls
             _assetFile = new AuroraAsset.AssetFile();
             _hasIcon = false;
             _hasBanner = false;
-            _iconMemoryStream?.Close();
-            _iconMemoryStream = null;
-            _bannerMemoryStream?.Close();
-            _bannerMemoryStream = null;
             LoadDefaultImages();
         }
 
@@ -160,53 +145,29 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void SetPreview(Image<Rgba32>? img, bool icon)
         {
+            var control = icon ? PreviewIcon : PreviewBanner;
             if (img == null)
             {
+                ImagePreview.SetSource(control, ImagePreview.LoadPlaceholder(icon ? "icon" : "banner"));
                 if (icon)
                 {
-                    LoadDefaultImage(PreviewIcon, "icon");
                     _hasIcon = false;
                 }
                 else
                 {
-                    LoadDefaultImage(PreviewBanner, "banner");
                     _hasBanner = false;
                 }
                 return;
             }
 
-            var ms = new MemoryStream();
-            img.SaveAsPng(ms);
-            ms.Seek(0, SeekOrigin.Begin);
-
-            var bitmap = new Bitmap(ms);
-            
+            ImagePreview.SetSource(control, ImagePreview.CreateBitmap(img));
             if (icon)
             {
-                _iconMemoryStream?.Close();
-                _iconMemoryStream = ms;
-                PreviewIcon.Source = bitmap;
                 _hasIcon = true;
             }
             else
             {
-                _bannerMemoryStream?.Close();
-                _bannerMemoryStream = ms;
-                PreviewBanner.Source = bitmap;
                 _hasBanner = true;
-            }
-        }
-
-        private void LoadDefaultImage(Avalonia.Controls.Image control, string type)
-        {
-            try
-            {
-                var uri = new Uri($"avares://AuroraAssetEditor/Assets/Placeholders/{type}.png");
-                control.Source = new Bitmap(AssetLoader.Open(uri));
-            }
-            catch
-            {
-                control.Source = null;
             }
         }
 

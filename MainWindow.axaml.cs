@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using AuroraAssetEditorLinux.Controls;
 using AuroraAssetEditorLinux.Classes;
@@ -266,43 +267,46 @@ namespace AuroraAssetEditorLinux
             if (files == null || files.Length == 0) return;
 
             BusyIndicator.IsVisible = true;
-            await Task.Run(() =>
+            try
             {
                 foreach (var fileName in files)
                 {
                     if (VerifyAuroraMagic(fileName))
-                        LoadAuroraAsset(fileName);
+                        await LoadAuroraAsset(fileName);
                     else
-                        LoadFsdAsset(fileName);
+                        await LoadFsdAsset(fileName);
                 }
-            });
-            BusyIndicator.IsVisible = false;
+            }
+            finally
+            {
+                BusyIndicator.IsVisible = false;
+            }
         }
 
-        private async void LoadAuroraAsset(string filename)
+        private async Task LoadAuroraAsset(string filename)
         {
             try
             {
-                var asset = new AuroraAsset.AssetFile(File.ReadAllBytes(filename));
+                var asset = await Task.Run(() => new AuroraAsset.AssetFile(File.ReadAllBytes(filename)));
                 if (asset.HasBoxArt)
                 {
                     _boxart.Load(asset);
-                    Dispatcher.UIThread.Invoke(() => BoxartTab.IsSelected = true);
+                    BoxartTab.IsSelected = true;
                 }
                 else if (asset.HasBackground)
                 {
                     _background.Load(asset);
-                    Dispatcher.UIThread.Invoke(() => BackgroundTab.IsSelected = true);
+                    BackgroundTab.IsSelected = true;
                 }
                 else if (asset.HasScreenshots)
                 {
                     _screenshots.Load(asset);
-                    Dispatcher.UIThread.Invoke(() => ScreenshotsTab.IsSelected = true);
+                    ScreenshotsTab.IsSelected = true;
                 }
                 else if (asset.HasIconBanner)
                 {
                     _iconBanner.Load(asset);
-                    Dispatcher.UIThread.Invoke(() => IconBannerTab.IsSelected = true);
+                    IconBannerTab.IsSelected = true;
                 }
                 else
                 {
@@ -316,16 +320,20 @@ namespace AuroraAssetEditorLinux
             }
         }
 
-        private async void LoadFsdAsset(string filename)
+        private async Task LoadFsdAsset(string filename)
         {
             try
             {
-                var asset = new FsdAsset(File.ReadAllBytes(filename));
-                var img = asset.GetBoxart();
-                if (img != null)
+                var image = await Task.Run(() =>
                 {
-                    LoadBoxartImage(img);
-                    Dispatcher.UIThread.Invoke(() => BoxartTab.IsSelected = true);
+                    var asset = new FsdAsset(File.ReadAllBytes(filename));
+                    return asset.GetBoxart();
+                });
+
+                if (image is Image<Rgba32> boxart)
+                {
+                    _boxart.Load(boxart);
+                    BoxartTab.IsSelected = true;
                 }
                 else
                 {
@@ -337,23 +345,6 @@ namespace AuroraAssetEditorLinux
                 SaveError(ex);
                 await ShowMessageAsync($"ERROR: While processing {filename}\n\n{ex.Message}\n\nSee error.log for more details", "ERROR");
             }
-        }
-
-        private void LoadBoxartImage(object image)
-        {
-            var loadMethod = _boxart.GetType()
-                .GetMethods()
-                .FirstOrDefault(m => m.Name == "Load"
-                    && m.GetParameters().Length == 1
-                    && (m.GetParameters()[0].ParameterType.IsAssignableFrom(image.GetType())
-                        || m.GetParameters()[0].ParameterType == typeof(object)));
-
-            if (loadMethod == null)
-            {
-                throw new InvalidOperationException($"BoxartControl has no compatible Load overload for {image.GetType().FullName}.");
-            }
-
-            loadMethod.Invoke(_boxart, new[] { image });
         }
 
         private async Task ShowMessageAsync(string message, string title)
@@ -371,21 +362,54 @@ namespace AuroraAssetEditorLinux
 
         private static bool VerifyAuroraMagic(string fileName)
         {
-            using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var br = new BinaryReader(stream);
-            return br.ReadUInt32() == 0x41455852; /* RXEA in LittleEndian format */
+            try
+            {
+                using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                if (stream.Length < 4)
+                    return false;
+                using var br = new BinaryReader(stream);
+                return br.ReadUInt32() == 0x41455852; /* RXEA in LittleEndian format */
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
         }
 
         private static bool VerifyFsdMagic(string fileName)
         {
-            using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var br = new BinaryReader(stream);
-            return br.ReadUInt32() == 0x41445346; /* FSDA in LittleEndian format */
+            try
+            {
+                using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                if (stream.Length < 4)
+                    return false;
+                using var br = new BinaryReader(stream);
+                return br.ReadUInt32() == 0x41445346; /* FSDA in LittleEndian format */
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
         }
 
         internal static void SaveError(Exception ex)
         {
-            File.AppendAllText("error.log", $"[{DateTime.Now}]:{ex}{Environment.NewLine}");
+            try
+            {
+                File.AppendAllText("error.log", $"[{DateTime.Now}]:{ex}{Environment.NewLine}");
+            }
+            catch
+            {
+                // Logging must never hide the original failure.
+            }
         }
 
         // ============ دوال الحوار المحدثة ============
@@ -483,9 +507,9 @@ namespace AuroraAssetEditorLinux
                     if (!string.IsNullOrWhiteSpace(file) && File.Exists(file))
                     {
                         if (VerifyAuroraMagic(file))
-                            LoadAuroraAsset(file);
+                            await LoadAuroraAsset(file);
                         else
-                            LoadFsdAsset(file);
+                            await LoadFsdAsset(file);
                     }
                 }
             }
@@ -521,22 +545,7 @@ namespace AuroraAssetEditorLinux
             var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
             if (clipboard == null) return;
 
-            var setTextAsync = clipboard.GetType().GetMethod("SetTextAsync", new[] { typeof(string) });
-            if (setTextAsync != null)
-            {
-                var result = setTextAsync.Invoke(clipboard, new object[] { text });
-                if (result is Task task)
-                {
-                    await task;
-                }
-                return;
-            }
-
-            var setText = clipboard.GetType().GetMethod("SetText", new[] { typeof(string) });
-            if (setText != null)
-            {
-                setText.Invoke(clipboard, new object[] { text });
-            }
+            await clipboard.SetTextAsync(text);
         }
 
         // ============ دوال الإغلاق ============

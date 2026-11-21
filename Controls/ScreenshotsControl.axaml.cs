@@ -21,6 +21,7 @@ using SixLabors.ImageSharp.Processing;
 using AuroraAssetEditorLinux.Dialogs;
 using AuroraAssetEditorLinux.Controls;
 using AuroraAssetEditorLinux.Classes;
+using AuroraAssetEditorLinux.Helpers;
 
 namespace AuroraAssetEditorLinux.Controls
 {
@@ -90,16 +91,8 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void LoadDefaultImage()
         {
-            try
-            {
-                var uri = new Uri("avares://AuroraAssetEditor/Assets/Placeholders/screenshot.png");
-                PreviewImg.Source = new Bitmap(AssetLoader.Open(uri));
-                _hasPreview = false;
-            }
-            catch
-            {
-                PreviewImg.Source = null;
-            }
+            ImagePreview.SetSource(PreviewImg, ImagePreview.LoadPlaceholder("screenshot"));
+            _hasPreview = false;
         }
 
         private void SetPreview(Image<Rgba32>? img)
@@ -111,10 +104,7 @@ namespace AuroraAssetEditorLinux.Controls
                 return;
             }
 
-            using var ms = new MemoryStream();
-            img.SaveAsPng(ms);
-            ms.Seek(0, SeekOrigin.Begin);
-            PreviewImg.Source = new Bitmap(ms);
+            ImagePreview.SetSource(PreviewImg, ImagePreview.CreateBitmap(img));
             _hasPreview = true;
         }
 
@@ -195,10 +185,7 @@ namespace AuroraAssetEditorLinux.Controls
                     var screenshot = _assetFile.GetScreenshot(i + 1);
                     if (screenshot == null) continue;
 
-                    using var ms = new MemoryStream();
-                    screenshot.SaveAsPng(ms);
-                    ms.Position = 0;
-                    convertedScreenshots[i] = SixLabors.ImageSharp.Image.Load<Rgba32>(ms);
+                    convertedScreenshots[i] = screenshot;
                 }
 
                 _screenshots = convertedScreenshots;

@@ -1,7 +1,7 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using SixLabors.ImageSharp;
@@ -37,44 +37,60 @@ namespace AuroraAssetEditorLinux.Classes
         // تحويل البيانات الخام إلى Image باستخدام ImageSharp
         private static Image<Rgba32> RawArgbToImage(byte[] raw, int width, int height)
         {
-            var image = new Image<Rgba32>(width, height);
+            var pixelCount = checked(width * height);
+            if (raw.Length < checked(pixelCount * 4))
+                throw new ArgumentException("The raw pixel buffer is smaller than the image dimensions require.", nameof(raw));
+
             var hasAlpha = false;
-            for (var index = 0; index < raw.Length; index += 4)
+            for (var index = 0; index < pixelCount; index++)
             {
-                if (raw[index] != 0)
-                {
-                    hasAlpha = true;
-                    break;
-                }
+                if (raw[index * 4] == 0)
+                    continue;
+                hasAlpha = true;
+                break;
             }
 
-            for (int y = 0; y < height; y++)
+            var image = new Image<Rgba32>(width, height);
+            image.ProcessPixelRows(accessor =>
             {
-                for (int x = 0; x < width; x++)
+                for (var y = 0; y < height; y++)
                 {
-                    int idx = (y * width + x) * 4;
-                    image[x, y] = new Rgba32(raw[idx + 1], raw[idx + 2], raw[idx + 3], hasAlpha ? raw[idx] : (byte)255);
+                    var row = accessor.GetRowSpan(y);
+                    var rowOffset = y * width * 4;
+                    for (var x = 0; x < width; x++)
+                    {
+                        var idx = rowOffset + (x * 4);
+                        row[x] = new Rgba32(raw[idx + 1], raw[idx + 2], raw[idx + 3],
+                            hasAlpha ? raw[idx] : (byte)255);
+                    }
                 }
-            }
+            });
             return image;
         }
 
         // تحويل Image إلى بيانات خام
         private static byte[] ImageToRawArgb(Image<Rgba32> img)
         {
-            var ret = new byte[img.Height * img.Width * 4];
-            for (int y = 0; y < img.Height; y++)
+            var width = img.Width;
+            var height = img.Height;
+            var ret = new byte[checked(width * height * 4)];
+            img.ProcessPixelRows(accessor =>
             {
-                for (int x = 0; x < img.Width; x++)
+                for (var y = 0; y < height; y++)
                 {
-                    int idx = (y * img.Width + x) * 4;
-                    var pixel = img[x, y];
-                    ret[idx] = pixel.A;
-                    ret[idx + 1] = pixel.R;
-                    ret[idx + 2] = pixel.G;
-                    ret[idx + 3] = pixel.B;
+                    var row = accessor.GetRowSpan(y);
+                    var rowOffset = y * width * 4;
+                    for (var x = 0; x < width; x++)
+                    {
+                        var pixel = row[x];
+                        var idx = rowOffset + (x * 4);
+                        ret[idx] = pixel.A;
+                        ret[idx + 1] = pixel.R;
+                        ret[idx + 2] = pixel.G;
+                        ret[idx + 3] = pixel.B;
+                    }
                 }
-            }
+            });
             return ret;
         }
 
@@ -127,30 +143,29 @@ namespace AuroraAssetEditorLinux.Classes
                     var dataSize = checked((int)entry.Size);
                     if (dataOffset < 0 || dataOffset > data.Length - dataSize)
                         throw new InvalidDataException($"Asset entry {i} points outside the file.");
+                    if (entry.VideoData.Length != dataSize)
+                        throw new InvalidDataException($"Asset entry {i} has an invalid size.");
 
-                    var tmp = new byte[dataSize];
-                    Buffer.BlockCopy(data, dataOffset, tmp, 0, dataSize);
-                    SetImage(tmp, i);
+                    Buffer.BlockCopy(data, dataOffset, entry.VideoData, 0, dataSize);
+                    SetImage(entry.VideoData, i);
                 }
             }
 
             public int PaddingSize => 0x800 - ((0x14 + EntryTable.Entries.Length * 0x40) % 0x800);
 
-            public IEnumerable<byte> Padding => new byte[PaddingSize];
-
             public byte[] FileData
             {
                 get
                 {
-                    var ret = new List<byte>();
+                    var entries = EntryTable.Entries;
                     uint offset = 0;
                     Header.DataSize = 0;
                     EntryTable.Flags = 0;
                     EntryTable.ScreenshotCount = 0;
 
-                    for (var i = 0; i < EntryTable.Entries.Length; i++)
+                    for (var i = 0; i < entries.Length; i++)
                     {
-                        var entry = EntryTable.Entries[i];
+                        var entry = entries[i];
                         if (entry.Size <= 0)
                             continue;
                         entry.Offset = offset;
@@ -161,26 +176,38 @@ namespace AuroraAssetEditorLinux.Classes
                             EntryTable.ScreenshotCount++;
                     }
 
-                    ret.AddRange(BitConverter.GetBytes(Swap(Header.Magic)));
-                    ret.AddRange(BitConverter.GetBytes(Swap(Header.Version)));
-                    ret.AddRange(BitConverter.GetBytes(Swap(Header.DataSize)));
-                    ret.AddRange(BitConverter.GetBytes(Swap(EntryTable.Flags)));
-                    ret.AddRange(BitConverter.GetBytes(Swap(EntryTable.ScreenshotCount)));
+                    var paddingSize = PaddingSize;
+                    var dataSize = checked((int)Header.DataSize);
+                    var ret = new byte[checked(20 + (entries.Length * 64) + paddingSize + dataSize)];
+                    var span = ret.AsSpan();
 
-                    foreach (var entry in EntryTable.Entries)
+                    BinaryPrimitives.WriteUInt32BigEndian(span, Header.Magic);
+                    BinaryPrimitives.WriteUInt32BigEndian(span[4..], Header.Version);
+                    BinaryPrimitives.WriteUInt32BigEndian(span[8..], Header.DataSize);
+                    BinaryPrimitives.WriteUInt32BigEndian(span[12..], EntryTable.Flags);
+                    BinaryPrimitives.WriteUInt32BigEndian(span[16..], EntryTable.ScreenshotCount);
+
+                    var position = 20;
+                    foreach (var entry in entries)
                     {
-                        ret.AddRange(BitConverter.GetBytes(Swap(entry.Offset)));
-                        ret.AddRange(BitConverter.GetBytes(Swap(entry.Size)));
-                        ret.AddRange(BitConverter.GetBytes(Swap(entry.ExtendedInfo)));
-                        ret.AddRange(entry.TextureHeader);
+                        BinaryPrimitives.WriteUInt32BigEndian(span[position..], entry.Offset);
+                        BinaryPrimitives.WriteUInt32BigEndian(span[(position + 4)..], entry.Size);
+                        BinaryPrimitives.WriteUInt32BigEndian(span[(position + 8)..], entry.ExtendedInfo);
+                        entry.TextureHeader.CopyTo(span[(position + 12)..]);
+                        position += 64;
                     }
 
-                    ret.AddRange(Padding);
+                    position += paddingSize;
 
-                    foreach (var entry in EntryTable.Entries.Where(entry => entry.Size > 0))
-                        ret.AddRange(entry.VideoData);
+                    foreach (var entry in entries)
+                    {
+                        if (entry.Size <= 0)
+                            continue;
+                        entry.VideoData.CopyTo(span[position..]);
+                        position += entry.VideoData.Length;
+                    }
 
-                    return ret.ToArray();
+                    return ret;
                 }
             }
 

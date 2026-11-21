@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using AuroraAssetEditorLinux.Controls;
 using AuroraAssetEditorLinux.Classes;
 using AuroraAssetEditorLinux.Dialogs;
+using AuroraAssetEditorLinux.Helpers;
 using Avalonia.VisualTree;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -26,7 +27,6 @@ namespace AuroraAssetEditorLinux.Controls
     {
         private readonly MainWindow _main;
         private AssetFile _assetFile;
-        private MemoryStream? _memoryStream;
         private bool _hasPreview;
 
         public bool HavePreview => _hasPreview;
@@ -64,17 +64,8 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void LoadDefaultImage()
         {
-            try
-            {
-                var uri = new Uri("avares://AuroraAssetEditor/Assets/Placeholders/background.png");
-                PreviewImg.Source = new Bitmap(AssetLoader.Open(uri));
-                _hasPreview = false;
-            }
-            catch
-            {
-                // إذا لم توجد الصورة، نتركها فارغة
-                PreviewImg.Source = null;
-            }
+            ImagePreview.SetSource(PreviewImg, ImagePreview.LoadPlaceholder("background"));
+            _hasPreview = false;
         }
 
         public void Save()
@@ -138,8 +129,6 @@ namespace AuroraAssetEditorLinux.Controls
         {
             _assetFile = new AssetFile();
             _hasPreview = false;
-            _memoryStream?.Close();
-            _memoryStream = null;
             LoadDefaultImage();
         }
 
@@ -158,13 +147,7 @@ namespace AuroraAssetEditorLinux.Controls
                 return;
             }
 
-            _memoryStream?.Close();
-            _memoryStream = new MemoryStream();
-            img.SaveAsPng(_memoryStream);
-            _memoryStream.Seek(0, SeekOrigin.Begin);
-
-            var previewBitmap = new Bitmap(_memoryStream);
-            PreviewImg.Source = previewBitmap;
+            ImagePreview.SetSource(PreviewImg, ImagePreview.CreateBitmap(img));
             _hasPreview = true;
         }
 
@@ -180,11 +163,7 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void OnDragEnter(object? sender, DragEventArgs e)
         {
-            var data = e.GetType().GetProperty("Data")?.GetValue(e);
-            var contains = data?.GetType().GetMethod("Contains", new[] { typeof(string) });
-            var hasFiles = contains != null && contains.Invoke(data, new object[] { "Files" }) is bool isFileDrop && isFileDrop;
-
-            if (hasFiles)
+            if (e.DataTransfer.Contains(DataFormat.File))
             {
                 e.DragEffects = DragDropEffects.Copy;
             }

@@ -4,7 +4,7 @@ outdir: .
 
 # Package control file
 package: aurora-asset-editor
-version: 1.0.0
+version: 1.1.0
 architecture: amd64
 maintainer: NGF76 <your-email@example.com>
 homepage: https://github.com/NGF76/Aurora-Asset-Editor-Linux

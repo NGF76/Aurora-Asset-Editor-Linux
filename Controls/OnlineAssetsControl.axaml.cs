@@ -189,7 +189,7 @@ namespace AuroraAssetEditorLinux.Controls
             DownloadAllButton.IsVisible = false;
             ResultBox.ItemsSource = null;
             SearchResultCount.Text = "0";
-            PreviewImg.Source = null;
+            ImagePreview.Clear(PreviewImg);
         }
 
         private void TitleIdBox_TextChanged(object? sender, TextChangedEventArgs e)
@@ -257,7 +257,7 @@ namespace AuroraAssetEditorLinux.Controls
 
             _isBusy = true;
             _main.BusyIndicator.IsVisible = true;
-            PreviewImg.Source = null;
+            ImagePreview.Clear(PreviewImg);
             _currentImage = null;
             ResultBox.ItemsSource = null;
             SearchResultCount.Text = "0";
@@ -384,7 +384,7 @@ namespace AuroraAssetEditorLinux.Controls
             var selectedItem = ResultBox.SelectedItem;
             if (selectedItem == null)
             {
-                PreviewImg.Source = null;
+                ImagePreview.Clear(PreviewImg);
                 _currentImage = null;
                 return;
             }
@@ -506,7 +506,7 @@ namespace AuroraAssetEditorLinux.Controls
             }
             else
             {
-                PreviewImg.Source = null;
+                ImagePreview.Clear(PreviewImg);
                 _currentImage = null;
                 StatusMessage.Text = "Failed to load cover image.";
             }
@@ -520,10 +520,7 @@ namespace AuroraAssetEditorLinux.Controls
             PreviewImg.MaxWidth = maxWidth;
             PreviewBox.MaxWidth = maxWidth + 20;
 
-            using var ms = new MemoryStream();
-            img.SaveAsPng(ms);
-            ms.Seek(0, SeekOrigin.Begin);
-            PreviewImg.Source = new Bitmap(ms);
+            ImagePreview.SetSource(PreviewImg, ImagePreview.CreateBitmap(img));
         }
 
         // ============ تحميل جميع الأصول ============

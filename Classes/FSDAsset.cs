@@ -69,6 +69,9 @@ namespace AuroraAssetEditorLinux.Classes
         {
             try
             {
+                if (data.Length < 4)
+                    return null;
+
                 // التحقق من تنسيق DDS
                 if (data[0] == 'D' && data[1] == 'D' && data[2] == 'S')
                 {
@@ -96,15 +99,24 @@ namespace AuroraAssetEditorLinux.Classes
 
         private static Image RawArgbToImage(byte[] raw, int width, int height)
         {
+            var pixelCount = checked(width * height);
+            if (raw.Length < checked(pixelCount * 4))
+                throw new ArgumentException("The raw pixel buffer is smaller than the image dimensions require.", nameof(raw));
+
             var image = new Image<Rgba32>(width, height);
-            for (int y = 0; y < height; y++)
+            image.ProcessPixelRows(accessor =>
             {
-                for (int x = 0; x < width; x++)
+                for (var y = 0; y < height; y++)
                 {
-                    int idx = (y * width + x) * 4;
-                    image[x, y] = new Rgba32(raw[idx + 1], raw[idx + 2], raw[idx + 3], raw[idx]);
+                    var row = accessor.GetRowSpan(y);
+                    var rowOffset = y * width * 4;
+                    for (var x = 0; x < width; x++)
+                    {
+                        var idx = rowOffset + (x * 4);
+                        row[x] = new Rgba32(raw[idx + 1], raw[idx + 2], raw[idx + 3], raw[idx]);
+                    }
                 }
-            }
+            });
             return image;
         }
 
@@ -186,6 +198,9 @@ namespace AuroraAssetEditorLinux.Classes
                     return;
                 }
 
+                if (Offset > data.Length || Size > data.Length - Offset)
+                    throw new InvalidDataException($"FSD asset entry points outside the file (offset {Offset}, size {Size}).");
+
                 Data = new byte[Size];
                 Buffer.BlockCopy(data, (int)Offset, Data, 0, Data.Length);
             }
@@ -211,6 +226,9 @@ namespace AuroraAssetEditorLinux.Classes
                     Data = Array.Empty<byte>();
                     return;
                 }
+
+                if (Offset > data.Length || Size > data.Length - Offset)
+                    throw new InvalidDataException($"FSD screenshot entry points outside the file (offset {Offset}, size {Size}).");
 
                 Data = new byte[Size];
                 Buffer.BlockCopy(data, (int)Offset, Data, 0, Data.Length);

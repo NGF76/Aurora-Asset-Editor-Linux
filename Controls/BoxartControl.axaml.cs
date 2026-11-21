@@ -12,6 +12,7 @@ using System.IO;
 using System.Threading.Tasks;
 using AuroraAssetEditorLinux.Classes;
 using AuroraAssetEditorLinux.Dialogs;
+using AuroraAssetEditorLinux.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -23,7 +24,6 @@ namespace AuroraAssetEditorLinux.Controls
     {
         private readonly MainWindow _main;
         private AuroraAsset.AssetFile _assetFile;
-        private MemoryStream? _memoryStream;
         private bool _hasPreview;
 
         public bool HavePreview => _hasPreview;
@@ -62,7 +62,7 @@ namespace AuroraAssetEditorLinux.Controls
 
         private void LoadDefaultImage()
         {
-            PreviewImg.Source = null;
+            ImagePreview.Clear(PreviewImg);
             PlaceholderText.IsVisible = true;
             _hasPreview = false;
         }
@@ -127,8 +127,6 @@ namespace AuroraAssetEditorLinux.Controls
         {
             _assetFile = new AuroraAsset.AssetFile();
             _hasPreview = false;
-            _memoryStream?.Close();
-            _memoryStream = null;
             LoadDefaultImage();
         }
 
@@ -147,15 +145,7 @@ namespace AuroraAssetEditorLinux.Controls
                 return;
             }
 
-            _memoryStream?.Close();
-            using var previewStream = new MemoryStream();
-            img.SaveAsPng(previewStream);
-            var previewBytes = previewStream.ToArray();
-            _memoryStream = new MemoryStream(previewBytes, writable: false);
-            _memoryStream.Seek(0, SeekOrigin.Begin);
-
-            var bitmap = new Bitmap(_memoryStream);
-            PreviewImg.Source = bitmap;
+            ImagePreview.SetSource(PreviewImg, ImagePreview.CreateBitmap(img));
             PlaceholderText.IsVisible = false;
             _hasPreview = true;
         }
