@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Aurora Asset Editor
+Comment=A tool for editing Aurora assets.
+Exec=/usr/lib/aurora-asset-editor/AuroraAssetEditorLinux
+Icon=aurora-asset-editor
+Terminal=false
+Categories=Utility;
+StartupWMClass=AuroraAssetEditorLinux
